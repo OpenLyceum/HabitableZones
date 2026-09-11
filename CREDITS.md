@@ -10,4 +10,4 @@ It is an independent [SceneryStack](https://scenerystack.org/) reimplementation,
 
 ## License
 
-GNU Affero General Public License v3.0 or later — see [org LICENSE](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+GNU Affero General Public License v3.0 or later — see [org LICENSE](https://github.com/OpenLyceum/.github/blob/main/LICENSE).

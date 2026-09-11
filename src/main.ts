@@ -72,10 +72,10 @@ onReadyToLaunch(() => {
 
     // Optional: fill in credits shown in Help → About
     credits: {
-      leadDesign: "OpenPhysics",
-      softwareDevelopment: "OpenPhysics",
-      team: "NAAP / OpenPhysics",
-      qualityAssurance: "OpenPhysics",
+      leadDesign: "OpenLyceum",
+      softwareDevelopment: "OpenLyceum",
+      team: "NAAP / OpenLyceum",
+      qualityAssurance: "OpenLyceum",
     },
   });
 

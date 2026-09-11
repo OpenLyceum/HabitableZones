@@ -246,7 +246,7 @@ If your organisation maintains multiple sims, create an npm initializer that
 wraps the rename step:
 
 ```sh
-npm create openphysics-sim@latest my-sim
+npm create openlyceum-sim@latest my-sim
 # → clones the template, runs npm run rename automatically
 ```
 
@@ -276,7 +276,7 @@ To pull template improvements back into an existing fork:
 
 ```sh
 # One-time: add the template as a remote
-git remote add template https://github.com/OpenPhysics/SceneryStackTemplate.git
+git remote add template https://github.com/OpenLyceum/SceneryStackTemplate.git
 
 # Pull template changes into a branch for review
 git fetch template

@@ -1,6 +1,6 @@
 # Habitable Zones
 
-[![CI](https://github.com/OpenPhysics/HabitableZones/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/HabitableZones/actions/workflows/ci.yml)
+[![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
 SceneryStack port of the NAAP *Habitable Zones* lab — circumstellar and galactic habitability
 screens. Built with [SceneryStack](https://scenerystack.org/), Vite 8, TypeScript, and Biome 2.
@@ -13,12 +13,12 @@ screens. Built with [SceneryStack](https://scenerystack.org/), Vite 8, TypeScrip
 - Progressive Web App (installable, offline-capable)
 - Unit tests for star evolution and galactic habitability helpers
 - Git hooks for Biome pre-commit checks
-- Shared GitHub Actions CI via `OpenPhysics/Baton`
+- Shared GitHub Actions CI via `OpenLyceum/Baton`
 
 ### NAAP reference sources
 
 Upstream Flash / AIR / React NAAP sources live in the sibling
-[`Baseline`](https://github.com/OpenPhysics/Baseline) repo under `Astronomy/`
+[`Baseline`](https://github.com/OpenLyceum/Baseline) repo under `Astronomy/`
 (see `baselines.json`). Clone Baseline with the fleet bootstrap, then:
 
 ```bash
@@ -68,9 +68,9 @@ Quality gate before release: `npm run check && npm run lint && npm run test && n
 
 ## License
 
-GNU Affero General Public License v3.0 — see [OpenPhysics org license](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+GNU Affero General Public License v3.0 — see [OpenLyceum org license](https://github.com/OpenLyceum/.github/blob/main/LICENSE).
 
 ## Contributing
 
-See [OpenPhysics contributing guidelines](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
+See [OpenLyceum contributing guidelines](https://github.com/OpenLyceum/.github/blob/main/CONTRIBUTING.md).
 Report bugs via GitHub Issues; use org issue templates.

@@ -42,7 +42,7 @@ function ensureFlashRoot(): void {
   if (!existsSync(flashRoot)) {
     fail(
       `NAAP Flash sources not found at:\n  ${flashRoot}\n` +
-        `Clone OpenPhysics/Baseline as a sibling of this sim, then:\n` +
+        `Clone OpenLyceum/Baseline as a sibling of this sim, then:\n` +
         `  (cd ../Baseline && ./scripts/fetch-baselines.sh --only Astronomy/flash-animations)`,
     );
   }
