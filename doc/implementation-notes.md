@@ -103,5 +103,5 @@ No tests for `CircumstellarModel`, `GalacticModel`, or view integration.
 
 ## Multi-screen
 
-Independent state — see [multi-screen.md](./multi-screen.md) (note: that file may still use template
+Independent state — see [SceneryStackTemplate `doc/multi-screen.md`](https://github.com/OpenLyceum/SceneryStackTemplate/blob/main/doc/multi-screen.md) (note: that file may still use template
 folder names; actual folders are `circumstellar/` and `galactic/`).
