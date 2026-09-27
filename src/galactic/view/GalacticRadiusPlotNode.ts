@@ -30,6 +30,8 @@ const RADIUS_KEYBOARD_STEP_KPC = 0.5;
 
 const PLOT_WIDTH = 280;
 const PLOT_HEIGHT = 100;
+const CURSOR_MOUSE_HALF_WIDTH = 6;
+const CURSOR_TOUCH_HALF_WIDTH = 10;
 const LEFT_INSET = 28;
 const TOP_INSET = 20;
 const TITLE_FONT = new PhetFont(10);
@@ -87,15 +89,16 @@ export class GalacticRadiusPlotNode extends Node {
       stroke: HabitableZonesColors.accentColorProperty,
       lineWidth: 1.5,
       cursor: "ew-resize",
+      // Translated via x (not re-pointed) so these fixed hit areas follow the line.
+      mouseArea: Shape.rectangle(-CURSOR_MOUSE_HALF_WIDTH, 0, 2 * CURSOR_MOUSE_HALF_WIDTH, PLOT_HEIGHT),
+      touchArea: Shape.rectangle(-CURSOR_TOUCH_HALF_WIDTH, 0, 2 * CURSOR_TOUCH_HALF_WIDTH, PLOT_HEIGHT),
       tagName: "div",
       focusable: true,
       accessibleName: options.accessibleNameProperty,
     });
 
     model.selectedRadiusProperty.link((radius) => {
-      const x = chartTransform.modelToViewX(radius);
-      cursorLine.setPoint1(x, 0);
-      cursorLine.setPoint2(x, PLOT_HEIGHT);
+      cursorLine.x = chartTransform.modelToViewX(radius);
     });
 
     const chartRectangle = new ChartRectangle(chartTransform, {
@@ -149,7 +152,8 @@ export class GalacticRadiusPlotNode extends Node {
       new RichDragListener({
         dragListenerOptions: {
           drag: (event) => {
-            const local = plotContainer.globalToParentPoint(event.pointer.point);
+            // Chart coordinates are plotContainer's local frame (origin at the plot corner).
+            const local = plotContainer.globalToLocalPoint(event.pointer.point);
             const radius = chartTransform.viewToModelX(Math.max(0, Math.min(PLOT_WIDTH, local.x)));
             model.selectedRadiusProperty.value = GALACTIC_RADIUS_RANGE_KPC.constrainValue(radius);
           },

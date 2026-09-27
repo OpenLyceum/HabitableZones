@@ -159,7 +159,7 @@ export function shzDiagramGridSpacingAU(zoomLevelIndex: number): { major: number
 }
 
 /** Model-to-view scale for the galactic disc, px per kpc. Source: MilkyWayComponent.as. */
-export const GALACTIC_DISC_PIXELS_PER_KPC = 19;
+export const GALACTIC_DISC_PIXELS_PER_KPC = 13;
 
 /** Model-to-view scale for galactic radius plots, px per kpc. Source: MetalsPlot.as. */
 export const GALACTIC_PLOT_PIXELS_PER_KPC = 14.7;

@@ -94,7 +94,8 @@ export class MilkyWayDiscNode extends Node {
       new RichDragListener({
         dragListenerOptions: {
           drag: (event) => {
-            setRadiusFromLocalPoint(this.globalToParentPoint(event.pointer.point));
+            // The disc is centered on this node's local origin.
+            setRadiusFromLocalPoint(this.globalToLocalPoint(event.pointer.point));
           },
         },
         keyboardDragListenerOptions: {

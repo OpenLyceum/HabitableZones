@@ -7,7 +7,7 @@
  * are acceptable — reconstructed parametrically from the NAAP pedagogy.
  */
 import type { TReadOnlyProperty } from "scenerystack/axon";
-import { DerivedProperty, NumberProperty } from "scenerystack/axon";
+import { DerivedProperty, NumberProperty, Property } from "scenerystack/axon";
 import type { TModel } from "scenerystack/joist";
 import { GALACTIC_RADIUS_RANGE_KPC, SUN_GALACTOCENTRIC_KPC } from "../../HabitableZonesConstants.js";
 import { findGhzBounds, habitability, metallicity, risk } from "./galacticHabitability.js";
@@ -57,8 +57,9 @@ export class GalacticModel implements TModel {
       habitability(radius),
     );
 
-    this.ghzInnerProperty = new DerivedProperty([this.selectedRadiusProperty], () => GHZ_INNER_KPC);
-    this.ghzOuterProperty = new DerivedProperty([this.selectedRadiusProperty], () => GHZ_OUTER_KPC);
+    // The GHZ is fixed by the reconstruction; exposed as Properties for view/a11y binding.
+    this.ghzInnerProperty = new Property(GHZ_INNER_KPC);
+    this.ghzOuterProperty = new Property(GHZ_OUTER_KPC);
 
     this.isInsideGhzProperty = new DerivedProperty(
       [this.selectedRadiusProperty],

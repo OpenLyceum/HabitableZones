@@ -40,10 +40,13 @@ export class GalacticScreenView extends ScreenView {
     });
     this.addChild(backgroundRect);
 
+    // Disc on the left, vertically centered; control panel and plots stacked on the right.
     const discNode = new MilkyWayDiscNode(model);
-    discNode.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN + 20;
-    discNode.centerY = this.layoutBounds.centerY - 30;
+    discNode.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
+    discNode.centerY = this.layoutBounds.centerY;
     this.addChild(discNode);
+
+    const controlPanel = new GalacticControlPanel(model);
 
     const metallicityPlot = new GalacticRadiusPlotNode(model, {
       titleStringProperty: strings.plots.metallicityTitleStringProperty,
@@ -59,19 +62,15 @@ export class GalacticScreenView extends ScreenView {
       accessibleNameProperty: a11y.controls.riskPlotCursorStringProperty,
     });
 
-    const plotsColumn = new VBox({
+    const rightColumn = new VBox({
       spacing: 16,
-      align: "left",
-      children: [metallicityPlot, riskPlot],
-      left: discNode.right + 30,
-      centerY: this.layoutBounds.centerY - 20,
+      align: "center",
+      children: [controlPanel, metallicityPlot, riskPlot],
     });
-    this.addChild(plotsColumn);
-
-    const controlPanel = new GalacticControlPanel(model);
-    controlPanel.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
-    controlPanel.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
-    this.addChild(controlPanel);
+    rightColumn.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
+    rightColumn.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+    this.addChild(rightColumn);
+    discNode.centerX = (this.layoutBounds.minX + rightColumn.left) / 2;
 
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
