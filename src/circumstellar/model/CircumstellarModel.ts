@@ -27,8 +27,8 @@ import {
 } from "../../HabitableZonesConstants.js";
 import { findStarIndexByMass } from "./findStarIndexByMass.js";
 import {
-  computePlanetDestructionTimeYears,
-  computeTidalLockTimeYears,
+  computePlanetDestructionTimeMyr,
+  computeTidalLockTimeMyr,
   effectivePlanetDistanceAU,
   effectivePlanetDistanceRangeAU,
   initialPlanetDistanceAU,
@@ -80,7 +80,7 @@ export class CircumstellarModel implements TModel {
   /** Index into SHZ_STARS for the currently selected star. */
   public readonly selectedStarIndexProperty: NumberProperty;
 
-  /** Stellar age since zero-age main sequence, years. */
+  /** Stellar age since zero-age main sequence, Myr (SHZ catalog units). */
   public readonly ageProperty: NumberProperty;
 
   /**
@@ -107,7 +107,7 @@ export class CircumstellarModel implements TModel {
   /** Diagram zoom-level index into SHZ_DIAGRAM_ZOOM_AU_VALUES. */
   public readonly diagramZoomLevelProperty: NumberProperty;
 
-  /** Maximum age for the selected star, years. */
+  /** Maximum age for the selected star, Myr. */
   public readonly starTimespanProperty: TReadOnlyProperty<number>;
 
   /** Catalog (zero-age) mass of the selected star, M☉. */
@@ -143,10 +143,10 @@ export class CircumstellarModel implements TModel {
   /** Whether a real-system preset locks the star-mass selector. */
   public readonly isStarMassLockedProperty: TReadOnlyProperty<boolean>;
 
-  /** Age (years) when tidal locking occurs; Infinity if never / not shown. */
+  /** Age (Myr) when tidal locking occurs; Infinity if never / not shown. */
   public readonly timePlanetTidallyLockedProperty: TReadOnlyProperty<number>;
 
-  /** Age (years) when the planet is destroyed by the expanding star. */
+  /** Age (Myr) when the planet is destroyed by the expanding star. */
   public readonly timePlanetDestroyedProperty: TReadOnlyProperty<number>;
 
   /** Whether the planet is tidally locked at the current age. */
@@ -324,14 +324,14 @@ export class CircumstellarModel implements TModel {
 
     this.timePlanetDestroyedProperty = new DerivedProperty(
       [this.selectedStarIndexProperty, this.planetDistanceProperty],
-      (index, initialDistance) => computePlanetDestructionTimeYears(getStar(index), initialDistance),
+      (index, initialDistance) => computePlanetDestructionTimeMyr(getStar(index), initialDistance),
     );
 
     this.timePlanetTidallyLockedProperty = new DerivedProperty(
       [this.selectedStarIndexProperty, this.planetDistanceProperty, this.starTimespanProperty],
       (index, initialDistance, timespan) => {
         const star = getStar(index);
-        let lockTime = computeTidalLockTimeYears(star.mass, initialDistance);
+        let lockTime = computeTidalLockTimeMyr(star.mass, initialDistance);
         if (!isTidalLockMarkerVisible(lockTime, timespan, SHZ_TIMELINE_WIDTH_PX)) {
           lockTime = Number.POSITIVE_INFINITY;
         }
@@ -391,9 +391,8 @@ export class CircumstellarModel implements TModel {
     }
 
     const star = getStar(this.selectedStarIndexProperty.value);
-    const ageDeltaYears =
-      (dt / FULL_STAR_EVOLUTION_PLAYBACK_SECONDS) * star.timespan * this.animationRateProperty.value;
-    const nextAge = Math.min(star.timespan, this.ageProperty.value + ageDeltaYears);
+    const ageDeltaMyr = (dt / FULL_STAR_EVOLUTION_PLAYBACK_SECONDS) * star.timespan * this.animationRateProperty.value;
+    const nextAge = Math.min(star.timespan, this.ageProperty.value + ageDeltaMyr);
     this.ageProperty.value = nextAge;
 
     if (nextAge >= star.timespan) {
@@ -403,8 +402,8 @@ export class CircumstellarModel implements TModel {
 
   public stepTimeline(): void {
     const star = getStar(this.selectedStarIndexProperty.value);
-    const stepYears = star.timespan / 200;
-    this.ageProperty.value = Math.min(star.timespan, this.ageProperty.value + stepYears);
+    const stepMyr = star.timespan / 200;
+    this.ageProperty.value = Math.min(star.timespan, this.ageProperty.value + stepMyr);
   }
 
   public zoomDiagramIn(): void {

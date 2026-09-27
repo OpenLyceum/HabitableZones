@@ -12,6 +12,7 @@ import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CircumstellarModel } from "../model/CircumstellarModel.js";
+import { formatAgeMyr } from "../model/formatAge.js";
 import { SHZ_STARS } from "../model/shzStars.js";
 
 export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
@@ -19,15 +20,14 @@ export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
     const strings = StringManager.getInstance().getCircumstellarStrings();
     const a11y = StringManager.getInstance().getCircumstellarA11yStrings();
 
-    const currentDetailsProperty = new DerivedProperty(
+    // Model ages are in Myr (SHZ catalog units).
+    const ageLabelProperty = new DerivedProperty(
+      [a11y.ageBillionYearsPatternStringProperty, a11y.ageMillionYearsPatternStringProperty, model.ageProperty],
+      (billionYearsPattern, millionYearsPattern, age) => formatAgeMyr(age, billionYearsPattern, millionYearsPattern),
+    );
+
+    const statusLabelProperty = new DerivedProperty(
       [
-        a11y.currentDetailsPatternStringProperty,
-        model.selectedStarIndexProperty,
-        model.ageProperty,
-        model.temperatureProperty,
-        model.hzInnerProperty,
-        model.hzOuterProperty,
-        model.effectivePlanetDistanceProperty,
         model.planetStatusProperty,
         model.isPlanetDestroyedProperty,
         model.isPlanetTidallyLockedProperty,
@@ -37,33 +37,31 @@ export class CircumstellarScreenSummaryContent extends ScreenSummaryContent {
         strings.status.destroyedStringProperty,
         strings.status.tidallyLockedStringProperty,
       ],
-      (
-        pattern,
-        starIndex,
-        age,
-        temperature,
-        hzInner,
-        hzOuter,
-        distance,
-        status,
-        destroyed,
-        locked,
-        tooHot,
-        temperate,
-        tooCold,
-        destroyedLabel,
-        lockedLabel,
-      ) => {
+      (status, destroyed, locked, tooHot, temperate, tooCold, destroyedLabel, lockedLabel) => {
+        if (destroyed) {
+          return destroyedLabel;
+        }
+        if (locked) {
+          return lockedLabel;
+        }
+        return status === "tooHot" ? tooHot : status === "tooCold" ? tooCold : temperate;
+      },
+    );
+
+    const currentDetailsProperty = new DerivedProperty(
+      [
+        a11y.currentDetailsPatternStringProperty,
+        model.selectedStarIndexProperty,
+        ageLabelProperty,
+        model.temperatureProperty,
+        model.hzInnerProperty,
+        model.hzOuterProperty,
+        model.effectivePlanetDistanceProperty,
+        statusLabelProperty,
+      ],
+      (pattern, starIndex, ageLabel, temperature, hzInner, hzOuter, distance, statusLabel) => {
         const star = SHZ_STARS[starIndex];
         const mass = star === undefined ? 0 : star.mass;
-        const ageLabel =
-          age >= 1e9 ? `${toFixed(age / 1e9, 1)} billion years` : `${toFixed(age / 1e6, 1)} million years`;
-        let statusLabel = status === "tooHot" ? tooHot : status === "tooCold" ? tooCold : temperate;
-        if (destroyed) {
-          statusLabel = destroyedLabel;
-        } else if (locked) {
-          statusLabel = lockedLabel;
-        }
         return StringUtils.fillIn(pattern, {
           mass: toFixed(mass, 1),
           age: ageLabel,

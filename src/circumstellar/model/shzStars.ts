@@ -9,7 +9,7 @@
  * (schema documented in .../scripts/shz_loader.py). That file decodes the
  * original zlib+AMF-encoded `shzStars.dat` — no re-decoding needed here.
  *
- * Units: `time` in years since zero-age main sequence; `mass` in solar
+ * Units: `time` in millions of years (Myr) since zero-age main sequence; `mass` in solar
  * masses (M☉); `logLum`/`logRadius`/`logTemp` are log₁₀ of luminosity (L☉),
  * radius (R☉), and effective temperature (K). The catalog spans 17 stars from
  * 0.3 M☉ to 30 M☉.

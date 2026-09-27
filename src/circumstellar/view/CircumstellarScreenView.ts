@@ -27,6 +27,9 @@ import { SHZTimelineNode } from "./SHZTimelineNode.js";
 const MARGIN = 12;
 const ROW_GAP = 8;
 
+// Keeps long translations of the settings panel from squeezing the middle row.
+const GENERAL_SETTINGS_MAX_WIDTH = 230;
+
 export type CircumstellarScreenViewOptions = ScreenViewOptions;
 
 export class CircumstellarScreenView extends ScreenView {
@@ -54,20 +57,25 @@ export class CircumstellarScreenView extends ScreenView {
 
     // ── Region 2: General Settings + Star/Planet Settings + H-R diagram ────────
     const generalSettingsPanel = new GeneralSettingsPanel(model);
+    generalSettingsPanel.maxWidth = GENERAL_SETTINGS_MAX_WIDTH;
     generalSettingsPanel.left = this.layoutBounds.minX + MARGIN;
     generalSettingsPanel.top = middleTop;
     this.addChild(generalSettingsPanel);
-
-    const comboBoxListParent = new Node();
-    const controlPanel = new CircumstellarControlPanel(model, comboBoxListParent);
-    controlPanel.left = generalSettingsPanel.right + ROW_GAP;
-    controlPanel.top = middleTop;
-    this.addChild(controlPanel);
 
     const hrDiagramNode = new HRDiagramNode(model);
     const hrPanel = new HabitableZonesPanel(hrDiagramNode);
     hrPanel.right = this.layoutBounds.maxX - MARGIN;
     hrPanel.top = middleTop;
+
+    // The settings panel fills the gap between its neighbours; maxWidth keeps it
+    // (and longer translations) from sliding under the H-R diagram.
+    const comboBoxListParent = new Node();
+    const controlPanel = new CircumstellarControlPanel(model, comboBoxListParent, {
+      maxWidth: hrPanel.left - generalSettingsPanel.right - 2 * ROW_GAP,
+    });
+    controlPanel.left = generalSettingsPanel.right + ROW_GAP;
+    controlPanel.top = middleTop;
+    this.addChild(controlPanel);
     this.addChild(hrPanel);
 
     // ── Region 3: full-width timeline ──────────────────────────────────────────

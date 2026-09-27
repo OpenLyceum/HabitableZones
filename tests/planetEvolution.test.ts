@@ -3,8 +3,8 @@
  */
 import { describe, expect, it } from "vitest";
 import {
-  computePlanetDestructionTimeYears,
-  computeTidalLockTimeYears,
+  computePlanetDestructionTimeMyr,
+  computeTidalLockTimeMyr,
   effectivePlanetDistanceAU,
   effectivePlanetDistanceRangeAU,
   initialPlanetDistanceAU,
@@ -43,9 +43,23 @@ describe("planetEvolution", () => {
   });
 
   it("computes a finite tidal-lock time for a close-in hot Jupiter", () => {
-    const lockTime = computeTidalLockTimeYears(1.06, 0.052);
+    const lockTime = computeTidalLockTimeMyr(1.06, 0.052);
     expect(lockTime).toBeGreaterThan(0);
     expect(Number.isFinite(lockTime)).toBe(true);
+  });
+
+  it("returns tidal-lock times in Myr, the catalog's age unit", () => {
+    const sun = SHZ_STARS.find((entry) => entry.mass === 1);
+    if (sun === undefined) {
+      throw new Error("expected 1 solar-mass star");
+    }
+    // Sanity: the Sun's catalog track spans ~13 Gyr, i.e. ~13 000 Myr.
+    expect(sun.timespan).toBeGreaterThan(10_000);
+    expect(sun.timespan).toBeLessThan(20_000);
+    // A close-in planet (0.05 AU) locks almost immediately (< 1 Myr)…
+    expect(computeTidalLockTimeMyr(1, 0.05)).toBeLessThan(1);
+    // …while Earth at 1 AU never locks within the Sun's lifetime.
+    expect(computeTidalLockTimeMyr(1, 1)).toBeGreaterThan(sun.timespan);
   });
 
   it("finds destruction time when a planet starts close to a low-mass star", () => {
@@ -53,7 +67,7 @@ describe("planetEvolution", () => {
     if (star === undefined) {
       throw new Error("expected 0.3 solar-mass star");
     }
-    const destroyTime = computePlanetDestructionTimeYears(star, 0.03);
+    const destroyTime = computePlanetDestructionTimeMyr(star, 0.03);
     expect(destroyTime).toBeLessThan(star.timespan);
   });
 });

@@ -10,7 +10,7 @@
  * Model ref: SHZDiagram.as, SHZDiagramGrid.as, SHZDiagramScalebar.as,
  * diagram.jsx (STAR_ORIGIN_POINT ≈ [100, 150], AU_PIXELS = 100, HZONE fill).
  */
-import { DerivedProperty } from "scenerystack/axon";
+import { DerivedProperty, Multilink, PatternStringProperty } from "scenerystack/axon";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
@@ -31,9 +31,7 @@ import {
 } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CircumstellarModel, PlanetStatus } from "../model/CircumstellarModel.js";
-import { findRealSystem, NONE_REAL_SYSTEM_ID } from "../model/realSystems.js";
-import { sampleStar } from "../model/StarEvolution.js";
-import { SHZ_STARS } from "../model/shzStars.js";
+import { findRealSystem, NONE_REAL_SYSTEM_ID, planetPericenterAU } from "../model/realSystems.js";
 import { blackbodyColor } from "./blackbodyColor.js";
 
 const STATUS_COLOR_PROPERTIES: Record<PlanetStatus, typeof HabitableZonesColors.tooHotColorProperty> = {
@@ -46,7 +44,9 @@ const LABEL_FONT = new PhetFont(10);
 const SCALEBAR_FONT = new PhetFont(11);
 const HZ_LABEL_FONT = new PhetFont({ size: 12, weight: "bold" });
 
-const REFERENCE_ORBIT_LABELS = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"];
+// Keyboard drag steps, view pixels (converted to AU through the zoom transform).
+const KEYBOARD_DRAG_DELTA_PX = 5;
+const KEYBOARD_SHIFT_DRAG_DELTA_PX = 1;
 
 export type SHZDiagramNodeOptions = {
   viewWidth?: number;
@@ -81,12 +81,6 @@ export class SHZDiagramNode extends Node {
       clipArea: Shape.rectangle(0, 0, viewWidth, viewHeight),
     });
     this.addChild(contentLayer);
-
-    let modelViewTransform = ModelViewTransform2.createSinglePointScaleMapping(
-      Vector2.ZERO,
-      originView,
-      shzDiagramPixelsPerAU(model.diagramZoomLevelProperty.value),
-    );
 
     const gridNode = new Path(null, { stroke: HabitableZonesColors.gridColorProperty, lineWidth: 0.5 });
     contentLayer.addChild(gridNode);
@@ -169,10 +163,16 @@ export class SHZDiagramNode extends Node {
     planetNode.addChild(lockedIndicator);
 
     // Scale bar, top-right of the box.
-    const scaleBarLabel = new Text("", {
-      font: SCALEBAR_FONT,
-      fill: HabitableZonesColors.textColorProperty,
-    });
+    const scaleBarAUProperty = new DerivedProperty([model.diagramZoomLevelProperty], (zoom) =>
+      shzDiagramScaleBarAU(zoom),
+    );
+    const scaleBarLabel = new Text(
+      new PatternStringProperty(strings.scaleBarPatternStringProperty, { value: scaleBarAUProperty }),
+      {
+        font: SCALEBAR_FONT,
+        fill: HabitableZonesColors.textColorProperty,
+      },
+    );
     const scaleBarRect = new Rectangle(0, 0, 10, 5, {
       fill: HabitableZonesColors.textColorProperty,
       stroke: HabitableZonesColors.textColorProperty,
@@ -181,25 +181,52 @@ export class SHZDiagramNode extends Node {
     const scaleBarNode = new Node({ children: [scaleBarLabel, scaleBarRect] });
     this.addChild(scaleBarNode);
 
-    const updateScaleBar = (): void => {
-      const zoom = model.diagramZoomLevelProperty.value;
-      const barAU = shzDiagramScaleBarAU(zoom);
-      const barPx = barAU * shzDiagramPixelsPerAU(zoom);
+    // Solar-system reference orbits: built once, resized on zoom.
+    const referenceOrbitLabels = [
+      strings.referenceOrbits.mercuryStringProperty,
+      strings.referenceOrbits.venusStringProperty,
+      strings.referenceOrbits.earthStringProperty,
+      strings.referenceOrbits.marsStringProperty,
+      strings.referenceOrbits.jupiterStringProperty,
+      strings.referenceOrbits.saturnStringProperty,
+      strings.referenceOrbits.uranusStringProperty,
+      strings.referenceOrbits.neptuneStringProperty,
+    ];
+    const referenceOrbits = REFERENCE_ORBITS_AU.map((distanceAU, index) => {
+      const circle = new Circle(1, {
+        stroke: HabitableZonesColors.orbitStrokeColorProperty,
+        lineDash: [4, 4],
+      });
+      const labelStringProperty = referenceOrbitLabels[index];
+      const label =
+        labelStringProperty === undefined
+          ? null
+          : new Text(labelStringProperty, { font: LABEL_FONT, fill: HabitableZonesColors.textColorProperty });
+      referenceOrbitsNode.addChild(circle);
+      if (label !== null) {
+        referenceOrbitsNode.addChild(label);
+      }
+      return { distanceAU, circle, label };
+    });
+
+    const modelViewTransformProperty = new DerivedProperty([model.diagramZoomLevelProperty], (zoom) =>
+      ModelViewTransform2.createSinglePointScaleMapping(Vector2.ZERO, originView, shzDiagramPixelsPerAU(zoom)),
+    );
+
+    // Zoom-dependent static geometry: grid, scale bar, reference orbits.
+    Multilink.multilink([model.diagramZoomLevelProperty, modelViewTransformProperty], (zoom, modelViewTransform) => {
+      const pixelsPerAU = shzDiagramPixelsPerAU(zoom);
+
+      const barPx = shzDiagramScaleBarAU(zoom) * pixelsPerAU;
       scaleBarRect.setRect(0, 12, barPx, 6);
-      scaleBarLabel.string = `${barAU} AU`;
       scaleBarLabel.centerX = barPx / 2;
       scaleBarNode.right = viewWidth - 14;
       scaleBarNode.top = 12;
-    };
 
-    const updateGrid = (): void => {
-      const zoom = model.diagramZoomLevelProperty.value;
-      const pixelsPerAU = shzDiagramPixelsPerAU(zoom);
       const { major, minor } = shzDiagramGridSpacingAU(zoom);
       const majorEvery = Math.max(1, Math.round(major / minor));
       const spacingPx = minor * pixelsPerAU;
       const shape = new Shape();
-
       const leftCount = Math.ceil(originView.x / spacingPx);
       const rightCount = Math.ceil((viewWidth - originView.x) / spacingPx);
       for (let i = -leftCount; i <= rightCount; i++) {
@@ -221,129 +248,114 @@ export class SHZDiagramNode extends Node {
         shape.lineTo(viewWidth, py);
       }
       gridNode.shape = shape;
-    };
 
-    const updateReferenceOrbits = (): void => {
-      referenceOrbitsNode.removeAllChildren();
-      REFERENCE_ORBITS_AU.forEach((distanceAU, index) => {
+      const labelAngle = Math.PI / 4;
+      for (const { distanceAU, circle, label } of referenceOrbits) {
         const radiusPx = modelViewTransform.modelToViewDeltaX(distanceAU);
-        referenceOrbitsNode.addChild(
-          new Circle(radiusPx, {
-            center: originView,
-            stroke: HabitableZonesColors.orbitStrokeColorProperty,
-            lineDash: [4, 4],
-          }),
-        );
-        const label = REFERENCE_ORBIT_LABELS[index];
-        if (label !== undefined) {
-          const angle = Math.PI / 4;
-          referenceOrbitsNode.addChild(
-            new Text(label, {
+        circle.radius = radiusPx;
+        circle.center = originView;
+        if (label !== null) {
+          label.left = originView.x + radiusPx * Math.cos(labelAngle) + 2;
+          label.centerY = Math.min(viewHeight - 8, originView.y + radiusPx * Math.sin(labelAngle));
+        }
+      }
+    });
+
+    Multilink.multilink(
+      [model.hzInnerProperty, model.hzOuterProperty, modelViewTransformProperty],
+      (hzInner, hzOuter, modelViewTransform) => {
+        const innerPx = modelViewTransform.modelToViewDeltaX(hzInner);
+        const outerPx = modelViewTransform.modelToViewDeltaX(hzOuter);
+        const midPx = (innerPx + outerPx) / 2;
+        hzBandNode.radius = Math.max(0.5, midPx);
+        hzBandNode.lineWidth = Math.max(0, outerPx - innerPx);
+        hzBandNode.center = originView;
+
+        // Place the "Habitable Zone" label just above the band arc, clamped inside the box.
+        hzLabel.centerX = Math.min(viewWidth - hzLabel.width / 2 - 4, originView.x + midPx);
+        hzLabel.centerY = Math.max(hzLabel.height / 2 + 4, originView.y - midPx);
+      },
+    );
+
+    Multilink.multilink([model.radiusSolarProperty, modelViewTransformProperty], (radiusSolar, modelViewTransform) => {
+      const radiusAU = radiusSolar * AU_PER_SOLAR_RADIUS;
+      starNode.radius = Math.max(SHZ_STAR_MIN_VIEW_RADIUS, modelViewTransform.modelToViewDeltaX(radiusAU));
+      starNode.center = originView;
+    });
+
+    Multilink.multilink(
+      [
+        model.effectivePlanetDistanceProperty,
+        model.isPlanetDestroyedProperty,
+        model.isPlanetTidallyLockedProperty,
+        modelViewTransformProperty,
+      ],
+      (effectiveDistance, destroyed, locked, modelViewTransform) => {
+        planetNode.x = originView.x + modelViewTransform.modelToViewDeltaX(effectiveDistance);
+        planetNode.y = originView.y;
+        planetNode.visible = !destroyed;
+        destroyedIndicator.visible = destroyed;
+        destroyedIndicator.center = new Vector2(planetNode.x, originView.y);
+        lockedIndicator.visible = locked && !destroyed;
+      },
+    );
+
+    // Real-system orbits depend on the mass-loss ratio, so they follow age too.
+    Multilink.multilink(
+      [
+        model.selectedRealSystemIdProperty,
+        model.catalogStarMassProperty,
+        model.currentStarMassProperty,
+        model.effectivePlanetDistanceProperty,
+        modelViewTransformProperty,
+      ],
+      (systemId, catalogMass, currentMass, selectedEffective, modelViewTransform) => {
+        realSystemOrbitsNode.removeAllChildren();
+        realPlanetMarkersNode.removeAllChildren();
+
+        const system = findRealSystem(systemId);
+        if (system === null) {
+          return;
+        }
+
+        const massRatio = currentMass === 0 ? 1 : catalogMass / currentMass;
+
+        for (const planet of system.planets) {
+          const orbitRadiusPx = modelViewTransform.modelToViewDeltaX(planet.semiMajorAxisAU * massRatio);
+
+          // The planet sits at pericenter a(1 − e); compare like with like.
+          const isHighlighted = Math.abs(planetPericenterAU(planet) * massRatio - selectedEffective) < 0.002;
+
+          realSystemOrbitsNode.addChild(
+            new Circle(orbitRadiusPx, {
+              center: originView,
+              stroke: isHighlighted
+                ? HabitableZonesColors.accentColorProperty
+                : HabitableZonesColors.orbitStrokeColorProperty,
+              lineWidth: isHighlighted ? 2 : 1,
+              lineDash: isHighlighted ? [] : [3, 3],
+            }),
+          );
+
+          realPlanetMarkersNode.addChild(
+            new Circle(3, {
+              fill: HabitableZonesColors.planetColorProperty,
+              x: originView.x + orbitRadiusPx,
+              y: originView.y,
+            }),
+          );
+
+          realPlanetMarkersNode.addChild(
+            new Text(planet.label, {
               font: LABEL_FONT,
               fill: HabitableZonesColors.textColorProperty,
-              left: originView.x + radiusPx * Math.cos(angle) + 2,
-              centerY: Math.min(viewHeight - 8, originView.y + radiusPx * Math.sin(angle)),
+              left: originView.x + orbitRadiusPx + 6,
+              centerY: originView.y,
             }),
           );
         }
-      });
-    };
-
-    const updateRealSystemOrbits = (): void => {
-      realSystemOrbitsNode.removeAllChildren();
-      realPlanetMarkersNode.removeAllChildren();
-
-      const system = findRealSystem(model.selectedRealSystemIdProperty.value);
-      if (system === null) {
-        return;
-      }
-
-      const star = SHZ_STARS[model.selectedStarIndexProperty.value];
-      if (star === undefined) {
-        return;
-      }
-
-      const massRatio = star.mass / sampleStar(star, model.ageProperty.value).mass;
-      const selectedEffective = model.effectivePlanetDistanceProperty.value;
-
-      for (const planet of system.planets) {
-        const scaledAU = planet.semiMajorAxisAU * massRatio;
-        const orbitRadiusPx = modelViewTransform.modelToViewDeltaX(scaledAU);
-        const isHighlighted = Math.abs(scaledAU - selectedEffective) < 0.002;
-
-        realSystemOrbitsNode.addChild(
-          new Circle(orbitRadiusPx, {
-            center: originView,
-            stroke: isHighlighted
-              ? HabitableZonesColors.accentColorProperty
-              : HabitableZonesColors.orbitStrokeColorProperty,
-            lineWidth: isHighlighted ? 2 : 1,
-            lineDash: isHighlighted ? [] : [3, 3],
-          }),
-        );
-
-        const marker = new Circle(3, {
-          fill: HabitableZonesColors.planetColorProperty,
-          x: originView.x + orbitRadiusPx,
-          y: originView.y,
-        });
-        realPlanetMarkersNode.addChild(marker);
-
-        realPlanetMarkersNode.addChild(
-          new Text(planet.label, {
-            font: LABEL_FONT,
-            fill: HabitableZonesColors.textColorProperty,
-            left: originView.x + orbitRadiusPx + 6,
-            centerY: originView.y,
-          }),
-        );
-      }
-    };
-
-    const updateHzBand = (): void => {
-      const innerPx = modelViewTransform.modelToViewDeltaX(model.hzInnerProperty.value);
-      const outerPx = modelViewTransform.modelToViewDeltaX(model.hzOuterProperty.value);
-      const midPx = (innerPx + outerPx) / 2;
-      hzBandNode.radius = Math.max(0.5, midPx);
-      hzBandNode.lineWidth = Math.max(0, outerPx - innerPx);
-      hzBandNode.center = originView;
-
-      // Place the "Habitable Zone" label just above the band arc, clamped inside the box.
-      hzLabel.centerX = Math.min(viewWidth - hzLabel.width / 2 - 4, originView.x + midPx);
-      hzLabel.centerY = Math.max(hzLabel.height / 2 + 4, originView.y - midPx);
-    };
-
-    const updateAllGeometry = (): void => {
-      updateGrid();
-      updateScaleBar();
-      updateReferenceOrbits();
-      updateHzBand();
-
-      const radiusAU = model.radiusSolarProperty.value * AU_PER_SOLAR_RADIUS;
-      starNode.radius = Math.max(SHZ_STAR_MIN_VIEW_RADIUS, modelViewTransform.modelToViewDeltaX(radiusAU));
-      starNode.center = originView;
-
-      const effectiveDistance = model.effectivePlanetDistanceProperty.value;
-      planetNode.x = originView.x + modelViewTransform.modelToViewDeltaX(effectiveDistance);
-      planetNode.y = originView.y;
-
-      updateRealSystemOrbits();
-
-      const destroyed = model.isPlanetDestroyedProperty.value;
-      planetNode.visible = !destroyed;
-      destroyedIndicator.visible = destroyed;
-      destroyedIndicator.center = new Vector2(planetNode.x, originView.y);
-      lockedIndicator.visible = model.isPlanetTidallyLockedProperty.value && !destroyed;
-    };
-
-    const updateTransform = (): void => {
-      modelViewTransform = ModelViewTransform2.createSinglePointScaleMapping(
-        Vector2.ZERO,
-        originView,
-        shzDiagramPixelsPerAU(model.diagramZoomLevelProperty.value),
-      );
-      updateAllGeometry();
-    };
+      },
+    );
 
     const updateGridVisibility = (): void => {
       gridNode.visible = model.showGridProperty.value;
@@ -359,17 +371,7 @@ export class SHZDiagramNode extends Node {
     model.showReferenceOrbitsProperty.link(updateOrbitVisibility);
     model.selectedRealSystemIdProperty.link(updateOrbitVisibility);
 
-    model.diagramZoomLevelProperty.link(updateTransform);
-    model.hzInnerProperty.link(updateAllGeometry);
-    model.hzOuterProperty.link(updateAllGeometry);
-    model.radiusSolarProperty.link(updateAllGeometry);
-    model.effectivePlanetDistanceProperty.link(updateAllGeometry);
-    model.selectedStarIndexProperty.link(updateAllGeometry);
-    model.ageProperty.link(updateAllGeometry);
-    model.selectedRealSystemIdProperty.link(updateAllGeometry);
-    model.isPlanetDestroyedProperty.link(updateAllGeometry);
-    model.isPlanetTidallyLockedProperty.link(updateAllGeometry);
-
+    // Accessor shim: drag writes go through the model's d_eff → d₀ back-mapping.
     const planetPositionProperty = {
       get value(): Vector2 {
         return new Vector2(model.effectivePlanetDistanceProperty.value, 0);
@@ -379,20 +381,20 @@ export class SHZDiagramNode extends Node {
       },
     };
 
-    const keyboardDragDelta = shzDiagramScaleBarAU(model.diagramZoomLevelProperty.value) / 10;
-
+    // The transform is a Property so pointer and keyboard drags stay correct after
+    // zooming. Keyboard deltas are in view pixels, so the step feels the same at
+    // every zoom level.
     planetNode.addInputListener(
       new RichDragListener({
         positionProperty: planetPositionProperty,
-        transform: modelViewTransform,
+        transform: modelViewTransformProperty,
         keyboardDragListenerOptions: {
-          dragDelta: keyboardDragDelta,
-          shiftDragDelta: keyboardDragDelta / 2,
+          dragDelta: KEYBOARD_DRAG_DELTA_PX,
+          shiftDragDelta: KEYBOARD_SHIFT_DRAG_DELTA_PX,
         },
       }),
     );
 
-    updateTransform();
     this.planetNode = planetNode;
   }
 }

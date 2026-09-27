@@ -7,6 +7,7 @@
  */
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { toFixed } from "scenerystack/dot";
+import { combineOptions } from "scenerystack/phet-core";
 import { StringUtils } from "scenerystack/phetcommon";
 import { HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl, PhetFont } from "scenerystack/scenery-phet";
@@ -18,7 +19,7 @@ import {
   SIM_COMBO_BOX_OPTIONS,
   SIM_RADIO_BUTTON_GROUP_OPTIONS,
 } from "../../common/HabitableZonesButtonOptions.js";
-import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
+import { HabitableZonesPanel, type HabitableZonesPanelOptions } from "../../common/HabitableZonesPanel.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { CircumstellarModel, HzMode, RealSystemId } from "../model/CircumstellarModel.js";
@@ -40,7 +41,7 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
   public readonly zoomInButton: RectangularPushButton;
   public readonly zoomOutButton: RectangularPushButton;
 
-  public constructor(model: CircumstellarModel, listParent: Node) {
+  public constructor(model: CircumstellarModel, listParent: Node, providedOptions?: HabitableZonesPanelOptions) {
     const strings = StringManager.getInstance().getCircumstellarStrings();
     const a11y = StringManager.getInstance().getCircumstellarA11yStrings();
 
@@ -81,9 +82,7 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
     const starComboBox = new ComboBox(model.selectedStarIndexProperty, starItems, listParent, {
       ...SIM_COMBO_BOX_OPTIONS,
       accessibleName: a11y.controls.starSelectorStringProperty,
-    });
-    model.isStarMassLockedProperty.link((locked) => {
-      starComboBox.enabled = !locked;
+      enabledProperty: DerivedProperty.not(model.isStarMassLockedProperty),
     });
 
     const planetDistanceControl = new NumberControl(
@@ -243,7 +242,7 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
       ],
     });
 
-    super(content, { align: "left" });
+    super(content, combineOptions<HabitableZonesPanelOptions>({ align: "left" }, providedOptions));
 
     this.realSystemComboBox = realSystemComboBox;
     this.starComboBox = starComboBox;

@@ -1,17 +1,15 @@
 import { toFixed } from "scenerystack/dot";
+import { StringUtils } from "scenerystack/phetcommon";
 /**
  * formatAge.ts
  *
- * Formats a stellar age in years for display (My / Gy labels). Mirrors
- * SHZTimeline.as:136-156.
+ * Formats a stellar age for display. The SHZ catalog (and therefore every
+ * model age) is in **millions of years (Myr)**; ages ≥ 1000 Myr are shown in
+ * Gy, smaller ones in My. Mirrors SHZTimeline.as:136-156 / timeline.jsx.
  */
-export function formatAgeYears(ageYears: number): string {
-  const absAge = Math.abs(ageYears);
-  if (absAge >= 1e9) {
-    return `${toFixed(ageYears / 1e9, 1)} Gy`;
+export function formatAgeMyr(ageMyr: number, gigayearsPattern: string, megayearsPattern: string): string {
+  if (Math.abs(ageMyr) >= 1000) {
+    return StringUtils.fillIn(gigayearsPattern, { value: toFixed(ageMyr / 1000, 1) });
   }
-  if (absAge >= 1e6) {
-    return `${toFixed(ageYears / 1e6, 1)} My`;
-  }
-  return `${toFixed(ageYears, 0)} y`;
+  return StringUtils.fillIn(megayearsPattern, { value: toFixed(ageMyr, Math.abs(ageMyr) < 10 ? 1 : 0) });
 }

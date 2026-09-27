@@ -93,10 +93,10 @@ export function rocheLimitAU(starMassSolar: number, logRadius: number): number {
 }
 
 /**
- * First time (years) the planet is engulfed / destroyed as the star expands.
+ * First time (Myr, catalog units) the planet is engulfed / destroyed as the star expands.
  * Returns Infinity if the planet survives the entire track.
  */
-export function computePlanetDestructionTimeYears(star: StarRecord, initialDistanceAU: number): number {
+export function computePlanetDestructionTimeMyr(star: StarRecord, initialDistanceAU: number): number {
   const distanceMassProduct = initialDistanceAU * star.mass;
 
   for (const point of star.dataTable) {
@@ -110,33 +110,33 @@ export function computePlanetDestructionTimeYears(star: StarRecord, initialDista
 }
 
 /**
- * Tidal-locking time in years from initial conditions (MainTimeline.as:757-766).
+ * Tidal-locking time in Myr (the catalog's age unit) from initial conditions
+ * (MainTimeline.as:757-766).
  * Returns Infinity when locking would not occur on human-relevant timescales.
  */
-export function computeTidalLockTimeYears(starMassSolar: number, initialDistanceAU: number): number {
+export function computeTidalLockTimeMyr(starMassSolar: number, initialDistanceAU: number): number {
   const earthRotationRadPerSec = (2 * Math.PI) / (24 * 60 * 60);
   const massTerm = 2e30 * 2e30 * starMassSolar * starMassSolar;
   const distanceTerm = (AU_METERS * initialDistanceAU) ** 6;
   const lockTimeSeconds =
     (100 * earthRotationRadPerSec * EARTH_MASS_KG * distanceTerm) / (G_NEWTON * massTerm * EARTH_RADIUS_M ** 3);
-  const lockTimeMegayears = lockTimeSeconds / (SECONDS_PER_YEAR * 1e6);
-  return lockTimeMegayears * 1e6;
+  return lockTimeSeconds / (SECONDS_PER_YEAR * 1e6);
 }
 
 /** Whether tidal-lock marker would be too small to render (Flash threshold). */
 export function isTidalLockMarkerVisible(
-  lockTimeYears: number,
-  starTimespanYears: number,
+  lockTimeMyr: number,
+  starTimespanMyr: number,
   timelineWidthPx: number,
 ): boolean {
-  if (!Number.isFinite(lockTimeYears)) {
+  if (!Number.isFinite(lockTimeMyr)) {
     return false;
   }
-  return (lockTimeYears * timelineWidthPx) / starTimespanYears >= 4;
+  return (lockTimeMyr * timelineWidthPx) / starTimespanMyr >= 4;
 }
 
 /** Star radius in AU at a given age. */
-export function starRadiusAU(star: StarRecord, ageYears: number): number {
-  const point = sampleStar(star, ageYears);
+export function starRadiusAU(star: StarRecord, ageMyr: number): number {
+  const point = sampleStar(star, ageMyr);
   return 10 ** point.logRadius * AU_PER_SOLAR_RADIUS;
 }

@@ -29,7 +29,7 @@ favorable for rocky planets and long-term stability?"
 | Quantity | Symbol | Units | Range / notes |
 |---|---|---|---|
 | Stellar mass (catalog) | M₀ | M☉ | 0.3–30 (17-star evolution catalog) |
-| Stellar age | t | years since ZAMS | 0 – star's timespan |
+| Stellar age | t | Myr since ZAMS (catalog units) | 0 – star's timespan |
 | Luminosity / radius / Teff | L, R, T | L☉, R☉, K | sampled from the track |
 | Planet distance (zero-age) | d₀ | AU | ~0.01–500 |
 | Effective planet distance | d_eff | AU | scales as M₀/M(t) |

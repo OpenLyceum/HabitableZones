@@ -10,9 +10,10 @@
  * Model ref: SHZTimeline.as, SHZTimelineCursor.as, SHZHabitabilityPlot.as,
  * timeline.jsx.
  */
-import { DerivedProperty } from "scenerystack/axon";
+import { DerivedProperty, Multilink } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
+import { StringUtils } from "scenerystack/phetcommon";
 import { HBox, Line, Node, Path, Rectangle, RichDragListener, Text, VBox } from "scenerystack/scenery";
 import { PhetFont, TimeControlNode } from "scenerystack/scenery-phet";
 import { HSlider } from "scenerystack/sun";
@@ -20,10 +21,10 @@ import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { HZ_CONSERVATIVE, HZ_OPTIMISTIC, SHZ_TIMELINE_WIDTH_PX } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import { type CircumstellarModel, classifyPlanetDistance, type PlanetStatus } from "../model/CircumstellarModel.js";
-import { formatAgeYears } from "../model/formatAge.js";
+import { formatAgeMyr } from "../model/formatAge.js";
 import { effectivePlanetDistanceAU } from "../model/planetEvolution.js";
 import { luminosity, sampleStar } from "../model/StarEvolution.js";
-import { SHZ_STARS, STAR_EPOCH_LABELS } from "../model/shzStars.js";
+import { SHZ_STARS } from "../model/shzStars.js";
 
 const TIMELINE_WIDTH = SHZ_TIMELINE_WIDTH_PX;
 
@@ -43,6 +44,7 @@ const TITLE_FONT = new PhetFont({ size: 14, weight: "bold" });
 const READOUT_FONT = new PhetFont(12);
 const LABEL_FONT = new PhetFont(12);
 const TICK_FONT = new PhetFont(9);
+const EPOCH_LABEL_ROW_HEIGHT = 11;
 
 const HZ_COEFFICIENTS = {
   optimistic: HZ_OPTIMISTIC,
@@ -72,6 +74,20 @@ export class SHZTimelineNode extends Node {
     super();
 
     const strings = StringManager.getInstance().getCircumstellarStrings();
+
+    // End-state label by Hurley stellar type (see STAR_EPOCH_LABELS in shzStars.ts).
+    const finalEpochLabel = (type: number): string => {
+      if (type >= 10 && type <= 12) {
+        return strings.epochWhiteDwarfStringProperty.value;
+      }
+      if (type === 13) {
+        return strings.epochNeutronStarStringProperty.value;
+      }
+      if (type === 14) {
+        return strings.epochBlackHoleStringProperty.value;
+      }
+      return strings.epochDisruptedStringProperty.value;
+    };
     const a11y = StringManager.getInstance().getCircumstellarA11yStrings();
 
     const timeToX = (timeYears: number, timespan: number): number =>
@@ -87,8 +103,14 @@ export class SHZTimelineNode extends Node {
     });
 
     const readoutProperty = new DerivedProperty(
-      [strings.timeSinceFormationPatternStringProperty, model.ageProperty],
-      (pattern, age) => pattern.replace("{{value}}", formatAgeYears(age)),
+      [
+        strings.timeSinceFormationPatternStringProperty,
+        strings.ageGigayearsPatternStringProperty,
+        strings.ageMegayearsPatternStringProperty,
+        model.ageProperty,
+      ],
+      (pattern, gigayearsPattern, megayearsPattern, age) =>
+        StringUtils.fillIn(pattern, { value: formatAgeMyr(age, gigayearsPattern, megayearsPattern) }),
     );
     const readout = new Text(readoutProperty, {
       font: READOUT_FONT,
@@ -235,8 +257,8 @@ export class SHZTimelineNode extends Node {
       axisTicksLayer.removeAllChildren();
       const tickCount = 8;
       for (let i = 0; i <= tickCount; i++) {
-        const timeYears = (i / tickCount) * timespan;
-        const x = timeToX(timeYears, timespan);
+        const timeMyr = (i / tickCount) * timespan;
+        const x = timeToX(timeMyr, timespan);
         axisTicksLayer.addChild(
           new Line(x, STRIP_TOP + STRIP_HEIGHT, x, STRIP_TOP + STRIP_HEIGHT + 4, {
             stroke: HabitableZonesColors.textColorProperty,
@@ -244,17 +266,26 @@ export class SHZTimelineNode extends Node {
           }),
         );
         axisTicksLayer.addChild(
-          new Text(formatAgeYears(timeYears), {
-            font: TICK_FONT,
-            fill: HabitableZonesColors.textColorProperty,
-            centerX: x,
-            top: AXIS_LABEL_Y,
-            maxWidth: 90,
-          }),
+          new Text(
+            formatAgeMyr(
+              timeMyr,
+              strings.ageGigayearsPatternStringProperty.value,
+              strings.ageMegayearsPatternStringProperty.value,
+            ),
+            {
+              font: TICK_FONT,
+              fill: HabitableZonesColors.textColorProperty,
+              centerX: x,
+              top: AXIS_LABEL_Y,
+              maxWidth: 90,
+            },
+          ),
         );
       }
 
-      // Epoch markers (subgiant, red giant, white dwarf, …).
+      // Epoch markers: a grid line at every catalog transition, but — like the
+      // Flash original — labels only at the start, the end of the main sequence,
+      // and the star's final state, so they never pile up near the end of life.
       epochTicksLayer.removeAllChildren();
       for (const epoch of star.epochsList) {
         const x = timeToX(epoch.time, timespan);
@@ -264,16 +295,37 @@ export class SHZTimelineNode extends Node {
             lineWidth: 1,
           }),
         );
-        const label = STAR_EPOCH_LABELS[epoch.type] ?? `Type ${epoch.type}`;
-        epochTicksLayer.addChild(
-          new Text(label, {
-            font: TICK_FONT,
-            fill: HabitableZonesColors.textColorProperty,
-            maxWidth: 70,
-            centerX: x,
-            top: TEMP_CHART_TOP - 12,
-          }),
-        );
+      }
+      const epochs = star.epochsList;
+      const endOfMainSequence = epochs[1];
+      const finalEpoch = epochs.length > 2 ? epochs[epochs.length - 1] : undefined;
+      // The start label sits inside the chart's top-left corner, clear of the header readout.
+      epochTicksLayer.addChild(
+        new Text(strings.epochMainSequenceStringProperty.value, {
+          font: TICK_FONT,
+          fill: HabitableZonesColors.textColorProperty,
+          maxWidth: 160,
+          left: 3,
+          top: TEMP_CHART_TOP + 3,
+        }),
+      );
+      const epochLabels: { time: number; label: string; row: number }[] = [];
+      if (endOfMainSequence !== undefined) {
+        epochLabels.push({ time: endOfMainSequence.time, label: strings.epochStopFusingStringProperty.value, row: 0 });
+      }
+      if (finalEpoch !== undefined) {
+        epochLabels.push({ time: finalEpoch.time, label: finalEpochLabel(finalEpoch.type), row: 1 });
+      }
+      for (const { time, label, row } of epochLabels) {
+        const text = new Text(label, {
+          font: TICK_FONT,
+          fill: HabitableZonesColors.textColorProperty,
+          maxWidth: 160,
+          centerX: timeToX(time, timespan),
+          bottom: TEMP_CHART_TOP - 2 - row * EPOCH_LABEL_ROW_HEIGHT,
+        });
+        text.left = Math.max(0, Math.min(text.left, TIMELINE_WIDTH - text.width));
+        epochTicksLayer.addChild(text);
       }
     };
 
@@ -354,6 +406,20 @@ export class SHZTimelineNode extends Node {
     model.planetDistanceProperty.link(rebuild);
     model.hzModeProperty.link(rebuild);
     model.timePlanetDestroyedProperty.link(rebuild);
+    // Tick and epoch labels read localized strings by value; rebuild on locale change.
+    Multilink.lazyMultilinkAny(
+      [
+        strings.ageGigayearsPatternStringProperty,
+        strings.ageMegayearsPatternStringProperty,
+        strings.epochMainSequenceStringProperty,
+        strings.epochStopFusingStringProperty,
+        strings.epochWhiteDwarfStringProperty,
+        strings.epochNeutronStarStringProperty,
+        strings.epochBlackHoleStringProperty,
+        strings.epochDisruptedStringProperty,
+      ],
+      rebuild,
+    );
     model.selectedStarIndexProperty.link(updateEventMarkers);
     model.planetDistanceProperty.link(updateEventMarkers);
     model.timePlanetDestroyedProperty.link(updateEventMarkers);

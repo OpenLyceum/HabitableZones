@@ -64,7 +64,24 @@
       "tooCold": "Trop froid",
       "destroyed": "Détruite",
       "tidallyLocked": "Verrouillée par les marées"
-    }
+    },
+    "scaleBarPattern": "{{value}} UA",
+    "referenceOrbits": {
+      "mercury": "Mercure",
+      "venus": "Vénus",
+      "earth": "Terre",
+      "mars": "Mars",
+      "jupiter": "Jupiter",
+      "saturn": "Saturne",
+      "uranus": "Uranus",
+      "neptune": "Neptune"
+    },
+    "ageGigayearsPattern": "{{value}} Ga",
+    "ageMegayearsPattern": "{{value}} Ma",
+    "epochMainSequence": "étoile de la séquence principale",
+    "epochNeutronStar": "l'étoile devient une étoile à neutrons",
+    "epochBlackHole": "l'étoile devient un trou noir",
+    "epochDisrupted": "l'étoile est détruite"
   },
   "galactic": {
     "distanceFromCenter": "Distance du centre galactique",
@@ -102,7 +119,9 @@
         "realSystemSelector": "Système exoplanétaire réel",
         "zoomIn": "Zoom avant sur le diagramme",
         "zoomOut": "Zoom arrière sur le diagramme"
-      }
+      },
+      "ageBillionYearsPattern": "{{value}} milliards d'années",
+      "ageMillionYearsPattern": "{{value}} millions d'années"
     },
     "galactic": {
       "screenSummary": {
