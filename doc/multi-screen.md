@@ -1,8 +1,6 @@
 # Multi-Screen Simulations
 
-This template ships as a **single-screen** simulation. Many physics simulations
-expose multiple conceptual modes — "Intro" + "Lab", "Basics" + "Advanced", etc.
-This guide shows how to extend the template to two or more screens.
+Habitable Zones already has two screens under `src/circumstellar/` and `src/galactic/`. To add another, follow the current fleet guide in [SceneryStackTemplate `doc/multi-screen.md`](https://github.com/OpenLyceum/SceneryStackTemplate/blob/main/doc/multi-screen.md). `npm run rename` and `npm run scaffold-screens` live in that template. The steps below are the older hand procedure; mirror an existing screen folder here.
 
 ---
 
@@ -83,7 +81,7 @@ public getScreenNames(): {
 
 ### 3 — Create the second screen folder
 
-Mirror the structure of `src/habitable-zones-screen/`:
+Mirror the structure of `src/circumstellar/`:
 
 ```
 src/
@@ -250,7 +248,7 @@ npm create openlyceum-sim@latest my-sim
 # → clones the template, runs npm run rename automatically
 ```
 
-See `scripts/rename-sim.ts` for the rename logic you can reuse.
+The rename script is `scripts/rename-sim.ts` in SceneryStackTemplate.
 
 ### Monorepo / workspace setup
 
