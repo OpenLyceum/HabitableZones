@@ -50,6 +50,10 @@ npm start        # dev server → http://localhost:5173
 | `npm run format` | Auto-format all files |
 | `npm run fix` | Lint + auto-fix |
 | `npm test` | Run Vitest unit tests |
+| `npm run test:fuzz` | Optional Playwright fuzz smoke (`?fuzz&ea`, default 30s) |
+| `npm run test:fuzz -- 90` | Same fuzz for 90 seconds (`--duration 90` or `FUZZ_DURATION=90` also work) |
+| `npm run test:fuzz:quick` | Shorter fuzz smoke (10s) |
+| `npm run test:fuzz:long` | Longer fuzz smoke (300s) |
 | `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
 | `npm run decompile` | Extract ActionScript from NAAP Flash `.swf` sources |
 | `npm run clean` | Remove `dist/` |
