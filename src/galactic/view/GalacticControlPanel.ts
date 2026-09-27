@@ -8,7 +8,7 @@ import { DerivedProperty } from "scenerystack/axon";
 import { toFixed } from "scenerystack/dot";
 import { StringUtils } from "scenerystack/phetcommon";
 import { Text, VBox } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
+import { NumberControl, PhetFont } from "scenerystack/scenery-phet";
 import { HabitableZonesPanel } from "../../common/HabitableZonesPanel.js";
 import HabitableZonesColors from "../../HabitableZonesColors.js";
 import { GALACTIC_RADIUS_RANGE_KPC } from "../../HabitableZonesConstants.js";
@@ -66,7 +66,7 @@ export class GalacticControlPanel extends HabitableZonesPanel {
         [strings.readoutInsideGhzStringProperty, strings.readoutOutsideGhzStringProperty, model.isInsideGhzProperty],
         (inside, outside, isInside) => (isInside ? inside : outside),
       ),
-      { font: "bold 14px sans-serif", fill: HabitableZonesColors.textColorProperty },
+      { font: new PhetFont({ size: 14, weight: "bold" }), fill: HabitableZonesColors.textColorProperty },
     );
 
     const content = new VBox({
