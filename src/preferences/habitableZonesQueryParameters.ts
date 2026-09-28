@@ -10,15 +10,15 @@
  *    `public: true`. Add `isValidValue` to bound numeric ranges.
  * 2. If it should also be user-editable at runtime, surface it as a preference
  *    in HabitableZonesPreferencesModel (initialize that Property from this query parameter).
+ *
+ * Usage: append e.g. `?name=value` to the sim URL (none are defined yet).
  */
 
 import { logGlobal } from "scenerystack/phet-core";
 import { QueryStringMachine } from "scenerystack/query-string-machine";
 import HabitableZonesNamespace from "../HabitableZonesNamespace.js";
 
-const habitableZonesQueryParameters = QueryStringMachine.getAll({
-  // No sim-specific query parameters yet. Add public params here when needed.
-});
+const habitableZonesQueryParameters = QueryStringMachine.getAll({});
 
 HabitableZonesNamespace.register("habitableZonesQueryParameters", habitableZonesQueryParameters);
 
