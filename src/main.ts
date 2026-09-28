@@ -35,14 +35,15 @@ onReadyToLaunch(() => {
   // Simulation-specific preferences; initial values come from habitableZonesQueryParameters.
   const simPreferences = new HabitableZonesPreferencesModel(Tandem.ROOT.createTandem("preferences"));
 
-  // Screen name Properties update automatically when the locale changes.
   const screens = [
     new CircumstellarScreen({
+      // The screen name Property updates automatically when the locale changes
       name: screenNames.circumstellarStringProperty,
       tandem: Tandem.ROOT.createTandem("circumstellarScreen"),
       backgroundColorProperty: HabitableZonesColors.backgroundColorProperty,
     }),
     new GalacticScreen({
+      // The screen name Property updates automatically when the locale changes
       name: screenNames.galacticStringProperty,
       tandem: Tandem.ROOT.createTandem("galacticScreen"),
       backgroundColorProperty: HabitableZonesColors.backgroundColorProperty,
