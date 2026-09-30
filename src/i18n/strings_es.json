@@ -34,6 +34,7 @@
     "zoomIn": "Acercar",
     "zoomOut": "Alejar",
     "planetTidallyLocked": "Bloqueado",
+    "planetDestroyedMark": "×",
     "timelineTidalLockLabel": "Acoplamiento de marea",
     "timelineDestroyedLabel": "Destruido",
     "generalSettingsTitle": "Configuración general",

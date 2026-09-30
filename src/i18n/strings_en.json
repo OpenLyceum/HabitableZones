@@ -34,6 +34,7 @@
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
     "planetTidallyLocked": "Locked",
+    "planetDestroyedMark": "×",
     "timelineTidalLockLabel": "Tidal Lock",
     "timelineDestroyedLabel": "Destroyed",
     "generalSettingsTitle": "General Settings",

@@ -34,6 +34,7 @@
     "zoomIn": "Zoom avant",
     "zoomOut": "Zoom arrière",
     "planetTidallyLocked": "Verrouillée",
+    "planetDestroyedMark": "×",
     "timelineTidalLockLabel": "Verrouillage de marée",
     "timelineDestroyedLabel": "Détruite",
     "generalSettingsTitle": "Paramètres généraux",

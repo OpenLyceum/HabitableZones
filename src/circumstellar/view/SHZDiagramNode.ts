@@ -145,7 +145,7 @@ export class SHZDiagramNode extends Node {
     });
     contentLayer.addChild(planetNode);
 
-    const destroyedIndicator = new Text("×", {
+    const destroyedIndicator = new Text(strings.planetDestroyedMarkStringProperty, {
       font: new PhetFont(28),
       fill: HabitableZonesColors.tooHotColorProperty,
       center: planetNode.center,

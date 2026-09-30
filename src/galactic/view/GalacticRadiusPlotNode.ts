@@ -15,7 +15,7 @@ import {
   TickLabelSet,
   TickMarkSet,
 } from "scenerystack/bamboo";
-import { Range, Vector2 } from "scenerystack/dot";
+import { Range, toFixed, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import type { ProfileColorProperty } from "scenerystack/scenery";
@@ -127,7 +127,8 @@ export class GalacticRadiusPlotNode extends Node {
 
     const xTickMarks = new TickMarkSet(chartTransform, Orientation.HORIZONTAL, 5, { extent: 4 });
     const xTickLabels = new TickLabelSet(chartTransform, Orientation.HORIZONTAL, 5, {
-      createLabel: (value) => new Text(`${value}`, { font: TICK_FONT, fill: HabitableZonesColors.textColorProperty }),
+      createLabel: (value) =>
+        new Text(toFixed(value, 0), { font: TICK_FONT, fill: HabitableZonesColors.textColorProperty }),
     });
 
     const plotContainer = new Node({
