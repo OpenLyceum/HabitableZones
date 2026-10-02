@@ -89,7 +89,13 @@ load** via `findGhzBounds()` (0.05 kpc scan); throws if no band found.
 
 ## Disposal
 
-Screen-lifetime models/views. No mid-session teardown.
+`CircumstellarModel`, `GalacticModel` and both screen views are created once and live as long as
+the sim, so their links and derived Properties are never unlinked and they have no `dispose()`;
+`tests/memory-leak.test.ts` covers `TimeModel`, the one class that does. The exception inside a
+view is `SHZTimelineNode`, which rebuilds its segment nodes whenever the planet distance, star or
+habitable-zone mode changes; the dropped nodes release their color listeners when they leave the
+display. Note that Circumstellar steps the star's age directly, so its `TimeModel.timeProperty`
+stays at 0; only `isPlayingProperty` and the speed are used.
 
 ## Testing
 

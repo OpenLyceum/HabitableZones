@@ -70,8 +70,8 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
 
     const starItems: ComboBoxItem<number>[] = SHZ_STARS.map((star, index) => {
       const labelProperty = new DerivedProperty(
-        [strings.unitsSolarMassesStringProperty],
-        (unit) => `${star.mass} ${unit}`,
+        [strings.unitsSolarMassesStringProperty, strings.valueUnitsPatternStringProperty],
+        (unit, pattern) => StringUtils.fillIn(pattern, { value: star.mass, units: unit }),
       );
       return {
         value: index,
@@ -95,7 +95,11 @@ export class CircumstellarControlPanel extends HabitableZonesPanel {
         titleNodeOptions: { font: LABEL_FONT, fill: HabitableZonesColors.textColorProperty },
         numberDisplayOptions: {
           decimalPlaces: 3,
-          valuePattern: new DerivedProperty([strings.unitsAuStringProperty], (unit) => `{{value}} ${unit}`),
+          // {{value}} is left in place for the NumberDisplay to fill.
+          valuePattern: new DerivedProperty(
+            [strings.unitsAuStringProperty, strings.valueUnitsPatternStringProperty],
+            (unit, pattern) => StringUtils.fillIn(pattern, { units: unit }),
+          ),
           textOptions: { fill: HabitableZonesColors.controlSurfaceTextColorProperty },
           backgroundFill: HabitableZonesColors.controlSurfaceColorProperty,
         },

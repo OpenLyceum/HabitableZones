@@ -82,7 +82,8 @@
     "epochMainSequence": "étoile de la séquence principale",
     "epochNeutronStar": "l'étoile devient une étoile à neutrons",
     "epochBlackHole": "l'étoile devient un trou noir",
-    "epochDisrupted": "l'étoile est détruite"
+    "epochDisrupted": "l'étoile est détruite",
+    "valueUnitsPattern": "{{value}} {{units}}"
   },
   "galactic": {
     "distanceFromCenter": "Distance du centre galactique",
@@ -100,7 +101,8 @@
     "plots": {
       "metallicityTitle": "Abondance en éléments lourds",
       "riskTitle": "Probabilité d'événement catastrophique"
-    }
+    },
+    "valueUnitsPattern": "{{value}} {{units}}"
   },
   "a11y": {
     "circumstellar": {

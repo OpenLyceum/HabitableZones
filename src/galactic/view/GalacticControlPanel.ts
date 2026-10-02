@@ -31,7 +31,11 @@ export class GalacticControlPanel extends HabitableZonesPanel {
         titleNodeOptions: { fill: HabitableZonesColors.textColorProperty },
         numberDisplayOptions: {
           decimalPlaces: 1,
-          valuePattern: new DerivedProperty([strings.unitsKiloparsecsStringProperty], (unit) => `{{value}} ${unit}`),
+          // {{value}} is left in place for the NumberDisplay to fill.
+          valuePattern: new DerivedProperty(
+            [strings.unitsKiloparsecsStringProperty, strings.valueUnitsPatternStringProperty],
+            (unit, pattern) => StringUtils.fillIn(pattern, { units: unit }),
+          ),
           textOptions: { fill: HabitableZonesColors.controlSurfaceTextColorProperty },
           backgroundFill: HabitableZonesColors.controlSurfaceColorProperty,
         },

@@ -78,7 +78,9 @@ Fleet-standard Vitest layout:
 | `planetEvolution.test.ts` | *d_eff*, Roche limit, destruction scan, tidal lock |
 | `galacticHabitability.test.ts` | Metallicity, risk, habitability, GHZ bounds |
 | `TimeModel.test.ts` | Play/pause elapsed time |
-| `memory-leak.test.ts` | Dispose regression |
+| `formatAge.test.ts` | Age readout in My / Gy |
+| `circumstellar/model/CircumstellarModel.test.ts` | Planet-distance and age-range clamping across star switches, scrubbing and reset |
+| `memory-leak.test.ts` | Dispose regression (`TimeModel`; the screen models live for the whole sim) |
 
 - Put unit tests only under root `tests/` (never co-locate or use `__tests__/`).
 - Run `npm test`. CI runs the suite when a `test` script is present.

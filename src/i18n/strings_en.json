@@ -82,7 +82,8 @@
     "epochMainSequence": "main-sequence star",
     "epochNeutronStar": "star becomes neutron star",
     "epochBlackHole": "star becomes black hole",
-    "epochDisrupted": "star is disrupted"
+    "epochDisrupted": "star is disrupted",
+    "valueUnitsPattern": "{{value}} {{units}}"
   },
   "galactic": {
     "distanceFromCenter": "Distance from Galactic Center",
@@ -100,7 +101,8 @@
     "plots": {
       "metallicityTitle": "Heavy Elements Abundance",
       "riskTitle": "Catastrophic Event Probability"
-    }
+    },
+    "valueUnitsPattern": "{{value}} {{units}}"
   },
   "a11y": {
     "circumstellar": {

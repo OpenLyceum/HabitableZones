@@ -26,6 +26,10 @@ import { GALACTIC_RADIUS_RANGE_KPC } from "../../HabitableZonesConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { GalacticModel } from "../model/GalacticModel.js";
 
+/** Grid spacing along the galactic-radius axis (kpc) and the 0–1 probability axis. */
+const RADIUS_GRID_SPACING_KPC = 5;
+const PROBABILITY_GRID_SPACING = 0.25;
+
 const RADIUS_KEYBOARD_STEP_KPC = 0.5;
 
 const PLOT_WIDTH = 280;
@@ -107,11 +111,13 @@ export class GalacticRadiusPlotNode extends Node {
       lineWidth: 1,
     });
 
-    const gridX = new GridLineSet(chartTransform, Orientation.HORIZONTAL, 0.25, {
+    // A GridLineSet's orientation is the axis its lines are spaced along: every
+    // 5 kpc across the radius axis, every 0.25 up the 0–1 probability axis.
+    const gridX = new GridLineSet(chartTransform, Orientation.HORIZONTAL, RADIUS_GRID_SPACING_KPC, {
       stroke: HabitableZonesColors.gridColorProperty,
       lineWidth: 0.5,
     });
-    const gridY = new GridLineSet(chartTransform, Orientation.VERTICAL, 5, {
+    const gridY = new GridLineSet(chartTransform, Orientation.VERTICAL, PROBABILITY_GRID_SPACING, {
       stroke: HabitableZonesColors.gridColorProperty,
       lineWidth: 0.5,
     });
