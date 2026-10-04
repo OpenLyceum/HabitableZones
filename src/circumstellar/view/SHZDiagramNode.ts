@@ -124,13 +124,14 @@ export class SHZDiagramNode extends Node {
         HabitableZonesColors.tooHotColorProperty,
         HabitableZonesColors.temperateColorProperty,
         HabitableZonesColors.tooColdColorProperty,
+        HabitableZonesColors.orbitStrokeColorProperty,
       ],
-      (status, destroyed, locked) => {
+      (status, destroyed, locked, _tooHot, _temperate, _tooCold, lockedColor) => {
         if (destroyed) {
           return HabitableZonesColors.tooHotColorProperty.value;
         }
         if (locked) {
-          return HabitableZonesColors.orbitStrokeColorProperty.value;
+          return lockedColor;
         }
         return STATUS_COLOR_PROPERTIES[status].value;
       },
@@ -153,14 +154,14 @@ export class SHZDiagramNode extends Node {
     });
     contentLayer.addChild(destroyedIndicator);
 
+    // A sibling, not a child, of the planet so it doesn't enlarge the drag area or focus highlight.
     const lockedIndicator = new Text(strings.planetTidallyLockedStringProperty, {
       font: LABEL_FONT,
       fill: HabitableZonesColors.textColorProperty,
-      top: SHZ_PLANET_VIEW_RADIUS + 4,
-      centerX: 0,
+      pickable: false,
       visible: false,
     });
-    planetNode.addChild(lockedIndicator);
+    contentLayer.addChild(lockedIndicator);
 
     // Scale bar, top-right of the box.
     const scaleBarAUProperty = new DerivedProperty([model.diagramZoomLevelProperty], (zoom) =>
@@ -297,6 +298,8 @@ export class SHZDiagramNode extends Node {
         destroyedIndicator.visible = destroyed;
         destroyedIndicator.center = new Vector2(planetNode.x, originView.y);
         lockedIndicator.visible = locked && !destroyed;
+        lockedIndicator.centerX = planetNode.x;
+        lockedIndicator.top = planetNode.y + SHZ_PLANET_VIEW_RADIUS + 4;
       },
     );
 
@@ -321,26 +324,32 @@ export class SHZDiagramNode extends Node {
         const massRatio = currentMass === 0 ? 1 : catalogMass / currentMass;
 
         for (const planet of system.planets) {
-          const orbitRadiusPx = modelViewTransform.modelToViewDeltaX(planet.semiMajorAxisAU * massRatio);
+          const semiMajorPx = modelViewTransform.modelToViewDeltaX(planet.semiMajorAxisAU * massRatio);
+          const semiMinorPx = semiMajorPx * Math.sqrt(1 - planet.eccentricity ** 2);
+          const pericenterPx = modelViewTransform.modelToViewDeltaX(planetPericenterAU(planet) * massRatio);
 
           // The planet sits at pericenter a(1 − e); compare like with like.
           const isHighlighted = Math.abs(planetPericenterAU(planet) * massRatio - selectedEffective) < 0.002;
 
+          // Ellipse with the star at one focus and pericenter on the +x axis, where the
+          // draggable planet is placed.
           realSystemOrbitsNode.addChild(
-            new Circle(orbitRadiusPx, {
-              center: originView,
-              stroke: isHighlighted
-                ? HabitableZonesColors.accentColorProperty
-                : HabitableZonesColors.orbitStrokeColorProperty,
-              lineWidth: isHighlighted ? 2 : 1,
-              lineDash: isHighlighted ? [] : [3, 3],
-            }),
+            new Path(
+              new Shape().ellipse(originView.x + pericenterPx - semiMajorPx, originView.y, semiMajorPx, semiMinorPx, 0),
+              {
+                stroke: isHighlighted
+                  ? HabitableZonesColors.accentColorProperty
+                  : HabitableZonesColors.orbitStrokeColorProperty,
+                lineWidth: isHighlighted ? 2 : 1,
+                lineDash: isHighlighted ? [] : [3, 3],
+              },
+            ),
           );
 
           realPlanetMarkersNode.addChild(
             new Circle(3, {
               fill: HabitableZonesColors.planetColorProperty,
-              x: originView.x + orbitRadiusPx,
+              x: originView.x + pericenterPx,
               y: originView.y,
             }),
           );
@@ -349,7 +358,7 @@ export class SHZDiagramNode extends Node {
             new Text(planet.label, {
               font: LABEL_FONT,
               fill: HabitableZonesColors.textColorProperty,
-              left: originView.x + orbitRadiusPx + 6,
+              left: originView.x + pericenterPx + 6,
               centerY: originView.y,
             }),
           );

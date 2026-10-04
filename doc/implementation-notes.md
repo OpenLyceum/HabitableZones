@@ -31,7 +31,7 @@ src/galactic/
     GalacticModel.ts
     galacticHabitability.ts       parametric Z, risk, H; findGhzBounds()
   view/
-    GalacticScreenView.ts, GalacticDiscNode.ts, GalacticPlotNode.ts, …
+    GalacticScreenView.ts, MilkyWayDiscNode.ts, GalacticRadiusPlotNode.ts, …
 
 src/common/
   TimeModel.ts                    play/pause only — partial use on Circumstellar
@@ -55,7 +55,9 @@ Data flows Model → View through AXON `Property` / `DerivedProperty` / `Multili
 | `animationRateProperty`, `timer.isPlayingProperty` | Playback |
 | Derived | `luminosityProperty`, `hzInnerProperty`, `hzOuterProperty`, `planetStatusProperty`, `timePlanetDestroyedProperty`, `timePlanetTidallyLockedProperty`, `isPlanetTidallyLockedProperty`, … |
 
-**Stepping:** `step(dt)` advances `ageProperty` directly from `FULL_STAR_EVOLUTION_PLAYBACK_SECONDS`, star `timespan`, and `animationRateProperty` when playing. **`timer.step(dt)` is never called**; `TimeModel.timeProperty` is unused. Playback stops at end of track and pauses.
+**Stepping:** `step(dt)` advances `ageProperty` directly from `FULL_STAR_EVOLUTION_PLAYBACK_SECONDS`, star `timespan`, and `animationRateProperty` when playing. **`timer.step(dt)` is never called**; `TimeModel.timeProperty` is unused. Playback pauses at the end of the track; pressing play there resets age to 0.
+
+**Tidal lock:** `timePlanetTidallyLockedProperty` is the raw lock time. The 4 px visibility rule (`isTidalLockMarkerVisible`) is applied only by `SHZTimelineNode` when drawing the marker — never to model state, or fast-locking close-in planets would read as unlocked.
 
 **API highlights:** `setEffectivePlanetDistanceAU()`, `getEffectivePlanetDistanceRange()` (Flash drag limits ∝ M₀/M); `stepTimeline()` — 1/200 of timespan per step button; `zoomDiagramIn()` / `zoomDiagramOut()`.
 
@@ -69,18 +71,20 @@ load** via `findGhzBounds()` (0.05 kpc scan); throws if no band found.
 
 ## View ↔ model contracts (physics-relevant)
 
-- **`SHZTimelineNode`**: temperature curve uses `planetDistanceProperty` (d₀); habitability strip uses
-  `effectivePlanetDistanceAU` — document mismatch for maintainers.
-- **`SHZTimelineNode`**: draws **destruction marker only** on timeline (tidal-lock time computed but not
-  drawn).
-- **`SHZDiagramNode`**: status colors, real-system orbit overlays, blackbody star color.
+- **`SHZTimelineNode`**: temperature curve and habitability strip both use *d_eff*. One `Multilink`
+  over star, d₀ and HZ mode rebuilds the curve, strip, ticks and event markers (tidal lock +
+  destruction); it reads the model's derived event times, which are already current because the model
+  registered them first.
+- **`SHZDiagramNode`**: status colors, elliptical real-system orbit overlays (pericenter on +x),
+  blackbody star color.
 
 ## Key design decisions
 
 - **Dual distance Properties** with guards — UI shows stretched orbit while preserving zero-age *d₀* for
   some formulas.
 - **Compressed `shzStars` catalog** — regenerate via header instructions; do not hand-edit tables.
-- **Parametric galactic curves** — thresholds `METALLICITY_THRESHOLD = 0.35`, `RISK_THRESHOLD = 0.45`.
+- **Parametric galactic curves** — thresholds `METALLICITY_THRESHOLD = 0.215`, `RISK_THRESHOLD = 0.19`
+  (GHZ ≈ 7.0–10.0 kpc, Sun inside).
 - **Partial `TimeModel` integration** — only `isPlayingProperty`; age math lives in `CircumstellarModel.step`.
 
 ## Common components
@@ -102,10 +106,12 @@ stays at 0; only `isPlayingProperty` and the speed are used.
 | File | Covers |
 |---|---|
 | `StarEvolution.test.ts`, `planetEvolution.test.ts`, `galacticHabitability.test.ts` | Core physics |
+| `circumstellar/model/CircumstellarModel.test.ts` | Distance clamping, tidal-lock state, replay at end of track |
+| `formatAge.test.ts` | Age readout |
 | `TimeModel.test.ts` | Clock |
 | `memory-leak.test.ts` | Dispose regression |
 
-No tests for `CircumstellarModel`, `GalacticModel`, or view integration.
+No tests for `GalacticModel` or view integration.
 
 ## Multi-screen
 

@@ -12,9 +12,9 @@ conditions can persist — around a single star, and across the Milky Way.
 - **Circumstellar** follows a star through its evolutionary track. As luminosity changes, the
   circumstellar habitable zone (HZ) moves. Students place a planet at a chosen distance, scrub or play
   the stellar timeline, switch between optimistic and conservative HZ limits, overlay solar-system
-  reference orbits, and load six real exoplanet systems. A **destruction marker** on the timeline
-  shows when the planet would be engulfed as the star expands; **tidal-locking time** appears in the
-  status readout (not as a timeline marker).
+  reference orbits, and load six real exoplanet systems. Timeline markers show when the planet
+  becomes **tidally locked** and when it would be **destroyed** as the star expands; the status
+  readout reports both.
 - **Galactic** lets students pick a galactocentric radius and read off normalized metallicity,
   catastrophic-event risk, and a combined habitability score. The galactic habitable zone (GHZ) is the
   annular band where metallicity is high enough and risk low enough. Those radial curves are a
@@ -67,7 +67,7 @@ radius and density (with a minimum helper of 1.5 AU).
 
 **Tidal-locking time** uses an Earth-like spin-down formula that depends strongly on distance (∝ d⁶)
 and stellar mass, evaluated at the **zero-age distance d₀** — it does **not** update as the orbit
-stretches with mass loss.
+stretches with mass loss. Close-in planets often lock within the first timeline step.
 
 ### Stellar tracks
 
@@ -80,16 +80,17 @@ final remnant. Zero-age main-sequence Sun in the catalog is dimmer/cooler than p
 
 The circumstellar timeline shows:
 
-- An **equilibrium-temperature curve** (0–100 °C clamp) computed using **d₀** (not *d_eff*).
-- A **habitability color strip** using **d_eff** vs HZ edges — students may see temperature and HZ band
-  diverge in meaning as the star evolves.
-- Epoch labels and a scrubbable age cursor; play/pause/step advance age.
+- An **equilibrium-temperature curve** (0–100 °C clamp) at the effective distance *d_eff*.
+- A **habitability color strip** comparing *d_eff* with the HZ edges.
+- Tidal-lock and destruction markers, epoch labels, and a scrubbable age cursor; play/pause/step
+  advance age, and pressing play at the end of the track replays from age 0.
 
 ### Real exoplanet presets
 
 Six systems: Gliese 581, 55 Cancri A, 51 Pegasi, HD 40307, HD 189733, HD 93083. Selecting a preset
 locks star mass to the nearest catalog entry, places the primary draggable planet at the **first**
-planet's **pericenter** *a(1−e)*, and draws all preset planets as diagram overlays.
+planet's **pericenter** *a(1−e)*, and draws every preset planet's elliptical orbit (star at a focus,
+pericenter toward the draggable planet) with a marker at its pericenter.
 
 ### Galactic habitability (reconstructed)
 
@@ -101,10 +102,11 @@ exponentially with radius (e-folding scale 3.5 kpc from inner edge). Combined ha
 H(R) = Z(R) · (1 − Risk(R))
 ```
 
-The GHZ is the contiguous annulus where normalized metallicity ≥ **0.35** and risk ≤ **0.45** — about
-**4.0–7.3 kpc** in this reconstruction. The default Sun location at **8 kpc** is **outside** this GHZ
-(Z ≈ 0.31, risk ≈ 0.14). Habitability is shown as a numeric readout; plots show metallicity and risk
-only.
+The GHZ is the contiguous annulus where normalized metallicity ≥ **0.215** and risk ≤ **0.19** — about
+**7.0–10.0 kpc** in this reconstruction, close to the commonly cited 7–9 kpc (Lineweaver et al. 2004).
+The default Sun location at **8 kpc** is **inside** it (Z ≈ 0.31, risk ≈ 0.14, H ≈ 0.27). The combined
+score *H* peaks further in (~4.7 kpc) because the GHZ edges are separate pass/fail criteria, not a
+cut on *H*. Habitability is shown as a numeric readout; plots show metallicity and risk only.
 
 ## Initial conditions (Circumstellar reset)
 
@@ -118,7 +120,8 @@ Sun (1 M☉), age 0, planet at 1 AU, optimistic HZ, reference orbits on, grid of
   markers, not full dynamical integrations.
 - Reference solar-system orbits are **circular** fixed semi-major axes (Mercury through Neptune; eight
   orbits).
-- Tidal-lock timeline marker is suppressed if it would be narrower than 4 px on the 900 px timeline.
+- Tidal-lock timeline marker is not drawn if it would sit within 4 px of the start of the 900 px
+  timeline (as in Flash); the planet still reports as tidally locked once that time has passed.
 - Galactic curves are **pedagogical reconstructions**, not the original Flash plot data or a full
   chemical-evolution model.
 

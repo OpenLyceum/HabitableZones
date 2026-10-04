@@ -11,7 +11,7 @@
  * timeline.jsx.
  */
 import { DerivedProperty, Multilink } from "scenerystack/axon";
-import { Dimension2, Range } from "scenerystack/dot";
+import { Dimension2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { StringUtils } from "scenerystack/phetcommon";
 import { HBox, Line, Node, Path, Rectangle, RichDragListener, Text, VBox } from "scenerystack/scenery";
@@ -22,7 +22,7 @@ import { HZ_CONSERVATIVE, HZ_OPTIMISTIC, SHZ_TIMELINE_WIDTH_PX } from "../../Hab
 import { StringManager } from "../../i18n/StringManager.js";
 import { type CircumstellarModel, classifyPlanetDistance, type PlanetStatus } from "../model/CircumstellarModel.js";
 import { formatAgeMyr } from "../model/formatAge.js";
-import { effectivePlanetDistanceAU } from "../model/planetEvolution.js";
+import { effectivePlanetDistanceAU, isTidalLockMarkerVisible } from "../model/planetEvolution.js";
 import { luminosity, sampleStar } from "../model/StarEvolution.js";
 import { SHZ_STARS } from "../model/shzStars.js";
 
@@ -117,7 +117,7 @@ export class SHZTimelineNode extends Node {
       fill: HabitableZonesColors.textColorProperty,
     });
 
-    this.rateSlider = new HSlider(model.animationRateProperty, new Range(0.1, 2), {
+    this.rateSlider = new HSlider(model.animationRateProperty, model.animationRateProperty.range, {
       trackSize: new Dimension2(90, 3),
       accessibleName: strings.rateStringProperty,
     });
@@ -205,11 +205,13 @@ export class SHZTimelineNode extends Node {
       const timespan = star.timespan;
       const initialDistance = model.planetDistanceProperty.value;
 
-      // Temperature curve (clamped y-domain 0..100 °C like the React port).
+      // Temperature curve (clamped y-domain 0..100 °C like the React port). Uses the
+      // mass-stretched distance d_eff, like the habitability strip below it.
       const tempShape = new Shape();
       let started = false;
       for (const point of star.dataTable) {
-        const tempC = planetTempC(point.logRadius, point.logTemp, initialDistance);
+        const distance = effectivePlanetDistanceAU(initialDistance, star.mass, point.mass);
+        const tempC = planetTempC(point.logRadius, point.logTemp, distance);
         const clamped = Math.max(0, Math.min(100, tempC));
         const x = timeToX(point.time, timespan);
         const y = TEMP_CHART_TOP + TEMP_CHART_HEIGHT - (clamped / 100) * TEMP_CHART_HEIGHT;
@@ -327,20 +329,14 @@ export class SHZTimelineNode extends Node {
         text.left = Math.max(0, Math.min(text.left, TIMELINE_WIDTH - text.width));
         epochTicksLayer.addChild(text);
       }
-    };
 
-    // Event markers (tidal lock, destruction).
-    const updateEventMarkers = (): void => {
+      // Event markers: tidal lock (only when wide enough to see, as in Flash) and destruction.
       eventMarkersLayer.removeAllChildren();
-      const star = SHZ_STARS[model.selectedStarIndexProperty.value];
-      if (star === undefined) {
-        return;
-      }
-      const addMarker = (timeYears: number, color: typeof HabitableZonesColors.tooHotColorProperty): void => {
-        if (!Number.isFinite(timeYears)) {
+      const addMarker = (timeMyr: number, color: typeof HabitableZonesColors.tooHotColorProperty): void => {
+        if (!Number.isFinite(timeMyr) || timeMyr > timespan) {
           return;
         }
-        const x = timeToX(timeYears, star.timespan);
+        const x = timeToX(timeMyr, timespan);
         eventMarkersLayer.addChild(
           new Line(x, TEMP_CHART_TOP, x, STRIP_TOP + STRIP_HEIGHT, {
             stroke: color,
@@ -349,7 +345,11 @@ export class SHZTimelineNode extends Node {
           }),
         );
       };
-      addMarker(model.timePlanetDestroyedProperty.value, HabitableZonesColors.tooHotColorProperty);
+      const lockTime = model.timePlanetTidallyLockedProperty.value;
+      if (isTidalLockMarkerVisible(lockTime, timespan, TIMELINE_WIDTH) && lockTime < destroyTime) {
+        addMarker(lockTime, HabitableZonesColors.orbitStrokeColorProperty);
+      }
+      addMarker(destroyTime, HabitableZonesColors.tooHotColorProperty);
     };
 
     // ── Draggable cursor ───────────────────────────────────────────────────────
@@ -402,10 +402,9 @@ export class SHZTimelineNode extends Node {
       }),
     );
 
-    model.selectedStarIndexProperty.link(rebuild);
-    model.planetDistanceProperty.link(rebuild);
-    model.hzModeProperty.link(rebuild);
-    model.timePlanetDestroyedProperty.link(rebuild);
+    // One rebuild per input change. The destruction and tidal-lock times derive from the star and
+    // distance, and the model registered those DerivedProperties first, so they are already current.
+    Multilink.multilink([model.selectedStarIndexProperty, model.planetDistanceProperty, model.hzModeProperty], rebuild);
     // Tick and epoch labels read localized strings by value; rebuild on locale change.
     Multilink.lazyMultilinkAny(
       [
@@ -420,9 +419,6 @@ export class SHZTimelineNode extends Node {
       ],
       rebuild,
     );
-    model.selectedStarIndexProperty.link(updateEventMarkers);
-    model.planetDistanceProperty.link(updateEventMarkers);
-    model.timePlanetDestroyedProperty.link(updateEventMarkers);
     model.ageProperty.link(updateCursor);
     model.selectedStarIndexProperty.link(updateCursor);
 
@@ -441,9 +437,5 @@ export class SHZTimelineNode extends Node {
       cursorLine,
     ];
     this.timelineCursor = cursorLine;
-
-    rebuild();
-    updateEventMarkers();
-    updateCursor();
   }
 }

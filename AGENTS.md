@@ -38,6 +38,7 @@ Two **independent** screen models — no shared root state.
 
 - HZ scaling uses **`√(L/L☉)`** with optimistic coefficients (0.8 / 1.5 AU for a solar twin) or conservative (0.95 / 1.37).
 - **Tidal-locking time** is evaluated at the **zero-age distance *d₀*** — it does not update as the orbit stretches with stellar mass loss.
+- The 4 px **tidal-lock marker** rule is view-only (`SHZTimelineNode`); never apply it to `timePlanetTidallyLockedProperty`, or close-in planets stop reporting as locked.
 - Galactic radial curves are a **parametric reconstruction** of NAAP pedagogy, not a byte-for-byte port of unpublished Flash formulae.
 - Full stellar lifetime ≈ **120 s wall-clock** at 1× animation on Circumstellar.
 
@@ -76,10 +77,10 @@ Fleet-standard Vitest layout:
 |---|---|
 | `StarEvolution.test.ts` | Catalog sampling, luminosity/temperature/radius |
 | `planetEvolution.test.ts` | *d_eff*, Roche limit, destruction scan, tidal lock |
-| `galacticHabitability.test.ts` | Metallicity, risk, habitability, GHZ bounds |
+| `galacticHabitability.test.ts` | Metallicity, risk, habitability, GHZ bounds (Sun inside ~7–10 kpc) |
 | `TimeModel.test.ts` | Play/pause elapsed time |
 | `formatAge.test.ts` | Age readout in My / Gy |
-| `circumstellar/model/CircumstellarModel.test.ts` | Planet-distance and age-range clamping across star switches, scrubbing and reset |
+| `circumstellar/model/CircumstellarModel.test.ts` | Planet-distance and age-range clamping across star switches, scrubbing and reset; tidal-lock state; replay at end of track |
 | `memory-leak.test.ts` | Dispose regression (`TimeModel`; the screen models live for the whole sim) |
 
 - Put unit tests only under root `tests/` (never co-locate or use `__tests__/`).

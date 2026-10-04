@@ -18,11 +18,15 @@ export const FE_H_GRADIENT_DEX_PER_KPC = -0.07;
 /** e-folding scale for inward catastrophic risk, kpc. */
 export const RISK_SCALE_KPC = 3.5;
 
-/** Normalized metallicity must exceed this for the GHZ. Tune for ~5–12 kpc band. */
-export const METALLICITY_THRESHOLD = 0.35;
+/**
+ * Normalized metallicity must reach this for the GHZ; sets the outer edge (~10 kpc). Together with
+ * RISK_THRESHOLD this gives a ~7–10 kpc band containing the Sun, consistent with the commonly cited
+ * 7–9 kpc GHZ (Lineweaver, Fenner & Gibson 2004).
+ */
+export const METALLICITY_THRESHOLD = 0.215;
 
-/** Normalized risk must stay below this for the GHZ. */
-export const RISK_THRESHOLD = 0.45;
+/** Normalized risk must not exceed this for the GHZ; sets the inner edge (~7 kpc). */
+export const RISK_THRESHOLD = 0.19;
 
 const R_MIN = GALACTIC_RADIUS_RANGE_KPC.min;
 const R_MAX = GALACTIC_RADIUS_RANGE_KPC.max;

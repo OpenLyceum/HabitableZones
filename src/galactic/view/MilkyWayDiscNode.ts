@@ -65,7 +65,8 @@ export class MilkyWayDiscNode extends Node {
     const selectedRing = new Circle(1, {
       stroke: HabitableZonesColors.accentColorProperty,
       lineWidth: 2,
-      cursor: "pointer",
+      // Display only: the radial handle carries the drag listener.
+      pickable: false,
     });
     model.selectedRadiusProperty.link((radius) => {
       selectedRing.radius = modelViewTransform.modelToViewDeltaX(radius);

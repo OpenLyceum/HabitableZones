@@ -23,7 +23,6 @@ import {
   PLANET_DISTANCE_RANGE_AU,
   SHZ_DIAGRAM_DEFAULT_ZOOM_LEVEL,
   SHZ_DIAGRAM_ZOOM_AU_VALUES,
-  SHZ_TIMELINE_WIDTH_PX,
 } from "../../HabitableZonesConstants.js";
 import { findStarIndexByMass } from "./findStarIndexByMass.js";
 import {
@@ -32,7 +31,6 @@ import {
   effectivePlanetDistanceAU,
   effectivePlanetDistanceRangeAU,
   initialPlanetDistanceAU,
-  isTidalLockMarkerVisible,
 } from "./planetEvolution.js";
 import { findRealSystem, NONE_REAL_SYSTEM_ID, planetPericenterAU, REAL_SYSTEMS } from "./realSystems.js";
 import { luminosity, radiusSolar, sampleStar, temperatureK } from "./StarEvolution.js";
@@ -143,7 +141,7 @@ export class CircumstellarModel implements TModel {
   /** Whether a real-system preset locks the star-mass selector. */
   public readonly isStarMassLockedProperty: TReadOnlyProperty<boolean>;
 
-  /** Age (Myr) when tidal locking occurs; Infinity if never / not shown. */
+  /** Age (Myr) when tidal locking occurs (may exceed the star's timespan). */
   public readonly timePlanetTidallyLockedProperty: TReadOnlyProperty<number>;
 
   /** Age (Myr) when the planet is destroyed by the expanding star. */
@@ -327,16 +325,11 @@ export class CircumstellarModel implements TModel {
       (index, initialDistance) => computePlanetDestructionTimeMyr(getStar(index), initialDistance),
     );
 
+    // The raw lock time: hiding a too-narrow timeline marker (isTidalLockMarkerVisible) is a
+    // view concern and must not make fast-locking, close-in planets read as unlocked.
     this.timePlanetTidallyLockedProperty = new DerivedProperty(
-      [this.selectedStarIndexProperty, this.planetDistanceProperty, this.starTimespanProperty],
-      (index, initialDistance, timespan) => {
-        const star = getStar(index);
-        let lockTime = computeTidalLockTimeMyr(star.mass, initialDistance);
-        if (!isTidalLockMarkerVisible(lockTime, timespan, SHZ_TIMELINE_WIDTH_PX)) {
-          lockTime = Number.POSITIVE_INFINITY;
-        }
-        return lockTime;
-      },
+      [this.selectedStarIndexProperty, this.planetDistanceProperty],
+      (index, initialDistance) => computeTidalLockTimeMyr(getStar(index).mass, initialDistance),
     );
 
     this.isPlanetTidallyLockedProperty = new DerivedProperty(
@@ -348,6 +341,13 @@ export class CircumstellarModel implements TModel {
       [this.ageProperty, this.timePlanetDestroyedProperty],
       (age, destroyTime) => Number.isFinite(destroyTime) && age >= destroyTime,
     );
+
+    // Pressing play at the end of the track replays the star's life from the start.
+    this.timer.isPlayingProperty.lazyLink((isPlaying) => {
+      if (isPlaying && this.ageProperty.value >= this.starTimespanProperty.value) {
+        this.ageProperty.value = 0;
+      }
+    });
   }
 
   /** Sets the zero-age planet distance from a displayed (effective) distance. */

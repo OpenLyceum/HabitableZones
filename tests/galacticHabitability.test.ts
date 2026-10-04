@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from "vitest";
 import { findGhzBounds, habitability, metallicity, risk } from "../src/galactic/model/galacticHabitability.js";
-import { GALACTIC_RADIUS_RANGE_KPC } from "../src/HabitableZonesConstants.js";
+import { GALACTIC_RADIUS_RANGE_KPC, SUN_GALACTOCENTRIC_KPC } from "../src/HabitableZonesConstants.js";
 
 const R_MIN: number = GALACTIC_RADIUS_RANGE_KPC.min;
 const R_MAX: number = GALACTIC_RADIUS_RANGE_KPC.max;
@@ -54,5 +54,17 @@ describe("galacticHabitability", () => {
     expect(bounds.inner).toBeGreaterThanOrEqual(R_MIN);
     expect(bounds.outer).toBeLessThanOrEqual(R_MAX);
     expect(bounds.inner).toBeLessThan(bounds.outer);
+  });
+
+  it("places the Sun inside a ~7–10 kpc GHZ", () => {
+    const bounds = findGhzBounds();
+    expect(bounds).not.toBeNull();
+    if (bounds === null) {
+      return;
+    }
+    expect(bounds.inner).toBeCloseTo(7, 0);
+    expect(bounds.outer).toBeCloseTo(10, 0);
+    expect(SUN_GALACTOCENTRIC_KPC).toBeGreaterThan(bounds.inner);
+    expect(SUN_GALACTOCENTRIC_KPC).toBeLessThan(bounds.outer);
   });
 });

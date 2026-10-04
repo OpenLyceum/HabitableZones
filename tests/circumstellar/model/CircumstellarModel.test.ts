@@ -69,3 +69,37 @@ describe("CircumstellarModel age range", () => {
     expect(model.ageProperty.range.contains(model.ageProperty.value)).toBe(true);
   });
 });
+
+describe("CircumstellarModel tidal locking", () => {
+  it("reports a fast-locking close-in planet as locked after the first timeline step", () => {
+    const model = new CircumstellarModel();
+    // 51 Peg b at 0.052 AU locks within thousands of years — far narrower than a timeline pixel.
+    model.selectedRealSystemIdProperty.value = "51pegasi";
+    expect(model.timePlanetTidallyLockedProperty.value).toBeLessThan(0.01);
+    model.stepTimeline();
+    expect(model.isPlanetTidallyLockedProperty.value).toBe(true);
+  });
+
+  it("never locks Earth at 1 AU within the Sun's lifetime", () => {
+    const model = new CircumstellarModel();
+    model.ageProperty.value = model.starTimespanProperty.value;
+    expect(model.timePlanetTidallyLockedProperty.value).toBeGreaterThan(model.starTimespanProperty.value);
+    expect(model.isPlanetTidallyLockedProperty.value).toBe(false);
+  });
+});
+
+describe("CircumstellarModel playback", () => {
+  it("replays from age 0 when play is pressed at the end of the track", () => {
+    const model = new CircumstellarModel();
+    model.ageProperty.value = model.starTimespanProperty.value;
+    model.timer.isPlayingProperty.value = true;
+    expect(model.ageProperty.value).toBe(0);
+  });
+
+  it("keeps the current age when play is pressed mid-track", () => {
+    const model = new CircumstellarModel();
+    model.ageProperty.value = model.starTimespanProperty.value / 2;
+    model.timer.isPlayingProperty.value = true;
+    expect(model.ageProperty.value).toBe(model.starTimespanProperty.value / 2);
+  });
+});
