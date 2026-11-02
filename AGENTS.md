@@ -47,24 +47,7 @@ Two **independent** screen models — no shared root state.
 Follows the shared [OpenLyceum accessibility convention](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
 Each screen registers `*ScreenSummaryContent` and explicit `pdomOrder` on its `*ScreenView`. A11y strings live under `a11y.circumstellar` and `a11y.galactic` in each locale JSON, via `StringManager.getCircumstellarA11yStrings()` / `getGalacticA11yStrings()`. Keep `currentDetailsContent` live over model state; every interactive node needs an `accessibleName`.
 
-## Compliance carve-outs
-
-### `package.json` overrides
-
-JSON cannot carry comments, so the rationale for forced transitive pins lives here. Prefer
-**tilde (`~`) or exact** versions — caret (`^`) lets minors drift under what is meant to be a
-hard pin. Dependabot ignores these three names (see `.github/dependabot.yml`) so it does not
-open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins them upstream.
-
-| Override | Pin | Why |
-|---|---|---|
-| `lodash` | `~4.18.1` | SceneryStack declares `~4.17.12`. Bump clears Dependabot/npm advisories patched in 4.18.x (e.g. GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh). |
-| `three` | `~0.125.2` | SceneryStack declares `^0.104.0`. Floor is 0.125.0 for GHSA-fq6p-x6j3-cmmq (ReDoS). Staying on the 0.125 line avoids a larger API jump; **0.125.x still has open CVEs** (e.g. XSS GHSA-7vvq-7r29-5vg3, fixed only in ≥0.137.0). Remove this override if/when SceneryStack stops depending on `three` or pins a patched line itself. LightPropagation keeps a higher `three` pin — do not force 0.125 there. |
-| `brace-expansion` | `~5.0.12` | Transitive via `vite-plugin-pwa` / Workbox. Clears npm audit (originally GHSA-mh99-v99m-4gvg; keep ≥5.0.9 for GHSA-rgw5-rvv9-x895; ≥5.0.12 for the CPU-DoS advisory). |
-
 ## Testing
-
-Fleet-standard Vitest layout:
 
 | Path | Purpose |
 |---|---|
@@ -83,18 +66,7 @@ Fleet-standard Vitest layout:
 | `circumstellar/model/CircumstellarModel.test.ts` | Planet-distance and age-range clamping across star switches, scrubbing and reset; tidal-lock state; replay at end of track |
 | `memory-leak.test.ts` | Dispose regression (`TimeModel`; the screen models live for the whole sim) |
 
-- Put unit tests only under root `tests/` (never co-locate or use `__tests__/`).
-- Run `npm test`. CI runs the suite when a `test` script is present.
-- Optional: `npm run test:fuzz` / `test:fuzz:quick` / `test:fuzz:long` (not part of default CI).
   Duration is 30s by default; override with `npm run test:fuzz -- 90` or `FUZZ_DURATION=90`.
-
-## Commands
-
-```bash
-npm run lint && npm run check && npm run build && npm test
-```
-
-`npm run release` runs `npm test` before the version bump, and `src/init.ts` reads `version` from `package.json`, so the About dialog always matches the release.
 
 ## Development notes
 
