@@ -70,6 +70,9 @@
         "preset": "recommended"
       },
       "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error",
+        "useAwaitThenable": "error",
         "useExplicitType": "warn"
       },
       "performance": {
