@@ -5,13 +5,7 @@
  * for a planet orbiting an evolving star. Formulae from MainTimeline.as:745-799.
  */
 import { Range } from "scenerystack/dot";
-import {
-  AU_PER_SOLAR_RADIUS,
-  KM_PER_AU,
-  PLANET_DISTANCE_RANGE_AU,
-  SOLAR_RADIUS_KM,
-} from "../../HabitableZonesConstants.js";
-import { sampleStar } from "./StarEvolution.js";
+import { KM_PER_AU, PLANET_DISTANCE_RANGE_AU, SOLAR_RADIUS_KM } from "../../HabitableZonesConstants.js";
 import { SHZ_STARS, type StarRecord } from "./shzStars.js";
 
 /** Minimum Roche-limit helper distance, AU (MainTimeline.as minPlanetDistance). */
@@ -84,7 +78,7 @@ export function planetDisplayDistanceEnvelopeAU(): Range {
 }
 
 /** Roche / tidal-disruption threshold in AU at a given evolutionary epoch. */
-export function rocheLimitAU(starMassSolar: number, logRadius: number): number {
+function rocheLimitAU(starMassSolar: number, logRadius: number): number {
   const starRadiusM = SOLAR_RADIUS_M * 10 ** logRadius;
   const densityKgPerM3 = (SOLAR_MASS_KG * starMassSolar) / ((4 / 3) * Math.PI * starRadiusM ** 3);
   let rocheHelperAu = 2.44 * (densityKgPerM3 / 5500) ** (1 / 3);
@@ -133,10 +127,4 @@ export function isTidalLockMarkerVisible(
     return false;
   }
   return (lockTimeMyr * timelineWidthPx) / starTimespanMyr >= 4;
-}
-
-/** Star radius in AU at a given age. */
-export function starRadiusAU(star: StarRecord, ageMyr: number): number {
-  const point = sampleStar(star, ageMyr);
-  return 10 ** point.logRadius * AU_PER_SOLAR_RADIUS;
 }

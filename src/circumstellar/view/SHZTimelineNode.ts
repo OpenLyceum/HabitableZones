@@ -75,7 +75,7 @@ export class SHZTimelineNode extends Node {
 
     const strings = StringManager.getInstance().getCircumstellarStrings();
 
-    // End-state label by Hurley stellar type (see STAR_EPOCH_LABELS in shzStars.ts).
+    // End-state label by Hurley stellar type (kw codes in shzStars.ts).
     const finalEpochLabel = (type: number): string => {
       if (type >= 10 && type <= 12) {
         return strings.epochWhiteDwarfStringProperty.value;

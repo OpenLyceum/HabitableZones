@@ -31,7 +31,7 @@ export const PANEL_CORNER_RADIUS = 6;
 // ── Physics / model defaults (SI units unless noted) ──────────────────────────
 
 /** Effective temperature of the Sun, kelvin. Source: SHZDiagramStar.as:11. */
-export const SOLAR_TEMPERATURE_K = 5808;
+const SOLAR_TEMPERATURE_K = 5808;
 
 /** One solar radius expressed in AU. Source: SHZDiagramStar.as:17. */
 export const AU_PER_SOLAR_RADIUS = 0.00465;
@@ -81,7 +81,7 @@ export const SHZ_DIAGRAM_VIEW_HEIGHT = 200;
 export const SHZ_STAR_ORIGIN_X = 92;
 
 /** Radius of the circumstellar diagram's decorative rings (HZ band, reference orbits), pixels. */
-export const SHZ_DIAGRAM_RADIUS = 260;
+const SHZ_DIAGRAM_RADIUS = 260;
 
 /**
  * Fixed model-to-view scale for the circumstellar diagram, px per AU. Matches
@@ -89,7 +89,7 @@ export const SHZ_DIAGRAM_RADIUS = 260;
  * giving 500 px/AU at the default 0.2-AU zoom so the Sun's habitable zone and
  * inner planets sit inside the diagram box.
  */
-export const SHZ_DIAGRAM_PIXELS_PER_AU = 100;
+const SHZ_DIAGRAM_PIXELS_PER_AU = 100;
 
 /** Minimum on-screen radius for the star disc, so faint/small stars stay visible, pixels. */
 export const SHZ_STAR_MIN_VIEW_RADIUS = 8;
@@ -117,10 +117,10 @@ export const SHZ_DIAGRAM_ZOOM_AU_VALUES = [
 export const SHZ_DIAGRAM_DEFAULT_ZOOM_LEVEL = 8;
 
 /** Minimum grid-line spacing in view pixels. Source: SHZDiagramGrid.as minSpacing. */
-export const SHZ_DIAGRAM_GRID_MIN_SPACING_PX = 15;
+const SHZ_DIAGRAM_GRID_MIN_SPACING_PX = 15;
 
 /** Scale-bar minimum spacing in view pixels. Source: SHZDiagramScalebar.as. */
-export const SHZ_DIAGRAM_SCALEBAR_MIN_SPACING_PX = 15;
+const SHZ_DIAGRAM_SCALEBAR_MIN_SPACING_PX = 15;
 
 /** Width of the evolution timeline in pixels (shared by timeline + habitability plot). */
 export const SHZ_TIMELINE_WIDTH_PX = 900;
@@ -162,7 +162,7 @@ export function shzDiagramGridSpacingAU(zoomLevelIndex: number): { major: number
 export const GALACTIC_DISC_PIXELS_PER_KPC = 13;
 
 /** Model-to-view scale for galactic radius plots, px per kpc. Source: MetalsPlot.as. */
-export const GALACTIC_PLOT_PIXELS_PER_KPC = 14.7;
+const GALACTIC_PLOT_PIXELS_PER_KPC = 14.7;
 
 HabitableZonesNamespace.register("HabitableZonesConstants", {
   SCREEN_VIEW_MARGIN,

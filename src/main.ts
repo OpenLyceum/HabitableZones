@@ -32,7 +32,7 @@ onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
   const screenNames = stringManager.getScreenNames();
 
-  // Simulation-specific preferences; initial values come from habitableZonesQueryParameters.
+  // Simulation-specific preferences (wire query-parameter defaults when any are added).
   const simPreferences = new HabitableZonesPreferencesModel(Tandem.ROOT.createTandem("preferences"));
 
   const screens = [

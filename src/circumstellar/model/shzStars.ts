@@ -15,14 +15,14 @@
  * 0.3 M☉ to 30 M☉.
  *
  * `epochsList` entries mark stellar-evolution transitions. `type` uses the
- * Hurley, Pols & Tout (2000, MNRAS 315, 543) "kw" stellar-type code — see
- * STAR_EPOCH_LABELS below. The Flash original (SHZSystemHistory.as,
- * MainTimeline.as) only ever labels epoch 0 (start), epoch 1 (end of main
- * sequence, whatever its type), and the final epoch (star's end state, by
- * type: 10-12 white dwarf, 13 neutron star, 14 black hole, 15 disrupted).
+ * Hurley, Pols & Tout (2000, MNRAS 315, 543) "kw" stellar-type code (0–9
+ * evolutionary phases; 10–12 white dwarf, 13 neutron star, 14 black hole,
+ * 15 disrupted). The Flash original (SHZSystemHistory.as, MainTimeline.as)
+ * only ever labels epoch 0 (start), epoch 1 (end of main sequence, whatever
+ * its type), and the final epoch (star's end state by type).
  */
 
-export type StarEpoch = { readonly type: number; readonly time: number };
+type StarEpoch = { readonly type: number; readonly time: number };
 
 export type StarDataPoint = {
   readonly time: number;
@@ -45,28 +45,6 @@ export type StarRecord = {
   readonly dataTable: readonly StarDataPoint[];
 };
 
-/**
- * Labels for the Hurley-Pols-Tout "kw" stellar-type codes seen in this
- * catalog's epochsList. Codes 0-9 are evolutionary phases; 10+ are remnants.
- */
-export const STAR_EPOCH_LABELS: Record<number, string> = {
-  0: "Convective low-mass main-sequence star",
-  1: "Main-sequence star",
-  2: "Hertzsprung-gap star",
-  3: "Red giant branch",
-  4: "Core helium burning",
-  5: "Early asymptotic giant branch",
-  6: "Thermally pulsing asymptotic giant branch",
-  7: "Naked helium main-sequence star",
-  8: "Naked helium Hertzsprung-gap star",
-  9: "Naked helium giant branch star",
-  10: "Helium white dwarf",
-  11: "Carbon-oxygen white dwarf",
-  12: "Oxygen-neon white dwarf",
-  13: "Neutron star",
-  14: "Black hole",
-  15: "Disrupted (massless remnant)",
-};
 
 /**
  * Compressed catalog: every 3rd dataTable sample kept (plus endpoints and

@@ -2,8 +2,7 @@
  * HabitableZonesPreferencesNode.ts
  *
  * Custom preferences UI shown in Preferences → Simulation. Controls are bound
- * to HabitableZonesPreferencesModel Properties (whose initial values come from
- * habitableZonesQueryParameters).
+ * to HabitableZonesPreferencesModel Properties.
  */
 
 import { Text, VBox } from "scenerystack/scenery";
