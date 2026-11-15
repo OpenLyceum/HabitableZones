@@ -10,6 +10,7 @@
 
 import type { Tandem } from "scenerystack/tandem";
 import HabitableZonesNamespace from "../HabitableZonesNamespace.js";
+import "./habitableZonesQueryParameters.js";
 
 export class HabitableZonesPreferencesModel {
   // biome-ignore lint/complexity/noUselessConstructor: tandem reserved for future preference Properties
