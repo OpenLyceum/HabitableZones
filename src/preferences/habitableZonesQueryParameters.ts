@@ -24,5 +24,3 @@ HabitableZonesNamespace.register("habitableZonesQueryParameters", habitableZones
 
 // Log query parameters (for the console / PhET-iO).
 logGlobal("phet.chipper.queryParameters");
-
-export default habitableZonesQueryParameters;
