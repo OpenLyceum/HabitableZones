@@ -47,6 +47,12 @@ Two **independent** screen models — no shared root state.
 Follows the shared [OpenLyceum accessibility convention](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
 Each screen registers `*ScreenSummaryContent` and explicit `pdomOrder` on its `*ScreenView`. A11y strings live under `a11y.circumstellar` and `a11y.galactic` in each locale JSON, via `StringManager.getCircumstellarA11yStrings()` / `getGalacticA11yStrings()`. Keep `currentDetailsContent` live over model state; every interactive node needs an `accessibleName`.
 
+## Compliance carve-outs
+
+- **Hardcoded colours (physics T→RGB):** `src/circumstellar/view/blackbodyColor.ts` constructs
+  `new Color(...)` from a blackbody polynomial. That is physical colour of light, not a theme
+  colour — every themeable colour lives in `HabitableZonesColors.ts`.
+
 ## Testing
 
 | Path | Purpose |
