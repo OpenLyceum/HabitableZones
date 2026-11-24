@@ -11,7 +11,7 @@
  * diagram.jsx (STAR_ORIGIN_POINT ≈ [100, 150], AU_PIXELS = 100, HZONE fill).
  */
 import { DerivedProperty, Multilink, PatternStringProperty } from "scenerystack/axon";
-import { Vector2 } from "scenerystack/dot";
+import { roundSymmetric, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Node, Path, Rectangle, RichDragListener, Text } from "scenerystack/scenery";
@@ -225,7 +225,7 @@ export class SHZDiagramNode extends Node {
       scaleBarNode.top = 12;
 
       const { major, minor } = shzDiagramGridSpacingAU(zoom);
-      const majorEvery = Math.max(1, Math.round(major / minor));
+      const majorEvery = Math.max(1, roundSymmetric(major / minor));
       const spacingPx = minor * pixelsPerAU;
       const shape = new Shape();
       const leftCount = Math.ceil(originView.x / spacingPx);
