@@ -7,6 +7,8 @@
  * temperature-to-RGB approximation (Tanner Helland's algorithm) valid over
  * 1000-40000 K.
  */
+
+import { roundSymmetric } from "scenerystack/dot";
 import { Color } from "scenerystack/scenery";
 
 function clamp255(value: number): number {
@@ -35,5 +37,5 @@ export function blackbodyColor(temperatureK: number): Color {
 
   const blue = clamp255(-11545.34298 + logT * 8529.658165 - logT2 * 2150.198586 + logT3 * 190.0306573);
 
-  return new Color(Math.round(red), Math.round(clamp255(green)), Math.round(blue));
+  return new Color(roundSymmetric(red), roundSymmetric(clamp255(green)), roundSymmetric(blue));
 }
